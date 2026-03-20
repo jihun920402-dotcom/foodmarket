@@ -69,6 +69,7 @@
 				</tbody>
 			</table>
 		</div>
+
 		<div class="col-md-4">
 			<div class="card border-0 shadow-sm sticky-top" style="top: 100px;">
 				<div class="card-header bg-dark text-white py-3 text-center">
@@ -79,15 +80,18 @@
 						<span class="fw-bold h5">최종 결제금액</span> <span
 							class="fw-bold h5 text-danger"><%= String.format("%,d", totalSum) %>원</span>
 					</div>
-					<form action="checkout" method="post"
-						onsubmit="return confirm('정말로 결제를 진행하시겠습니까?');">
+
+					<form action="OrderServlet" method="post"
+						onsubmit="return confirm('정말로 결제를 진행하시겠습니까?\n결제 완료 후 주문 상세 내역으로 이동합니다.');">
 						<input type="hidden" name="totalPrice" value="<%= totalSum %>">
 						<input type="hidden" name="pName"
 							value="<%= representativeName %>">
+
 						<div
 							class="bg-white p-3 rounded mb-3 small shadow-sm border-start border-4 border-primary">
 							<p class="mb-1 text-muted">결제 후 잔여 마일리지</p>
-							<p class="mb-0 fw-bold"><%= String.format("%,d", (loginUser != null ? loginUser.getMileage() - totalSum : 0)) %>원
+							<p class="mb-0 fw-bold">
+								<%= String.format("%,d", (loginUser != null ? loginUser.getMileage() - totalSum : 0)) %>원
 							</p>
 						</div>
 						<button type="submit"

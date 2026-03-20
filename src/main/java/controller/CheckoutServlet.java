@@ -1,6 +1,9 @@
 package controller;
 
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.List;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -13,6 +16,8 @@ import model.OrderDAO;
 import model.OrderDTO;
 import model.ProductDAO;
 import model.ProductDTO;
+import model.CartDAO;
+import model.CartDTO;
 
 @WebServlet("/checkout")
 public class CheckoutServlet extends HttpServlet {
@@ -30,49 +35,81 @@ public class CheckoutServlet extends HttpServlet {
 			return;
 		}
 
-		// --- [방어 로직 추가] 파라미터 null 체크 ---
-		String pIdParam = request.getParameter("p_id");
-		String countParam = request.getParameter("count");
-
-		// 파라미터가 하나라도 null이거나 비어있으면 목록으로 튕겨냄
-		if (pIdParam == null || pIdParam.isEmpty() || countParam == null || countParam.isEmpty()) {
-			System.out.println("에러: p_id 또는 count 값이 전달되지 않았습니다.");
-			response.sendRedirect("list");
-			return;
-		}
-
-		// 안전하게 파싱 (여기서 에러가 났던 36번줄 로직입니다)
-		int p_id = Integer.parseInt(pIdParam);
-		int count = Integer.parseInt(countParam);
-
+		// --- [1] 파라미터 수신 ---
+		String[] pIdArray = request.getParameterValues("p_id");
+		String[] countArray = request.getParameterValues("count");
+		String totalPriceParam = request.getParameter("totalPrice");
 		String address = request.getParameter("address");
-		String phone = request.getParameter("phone");
+		String phone = request.getParameter("phone"); // 결제창 입력값
 
-		ProductDAO pDao = new ProductDAO();
-		ProductDTO product = pDao.getProductById(p_id);
-
-		if (product == null) {
+		if (pIdArray == null || pIdArray.length == 0) {
 			response.sendRedirect("list");
 			return;
 		}
-
-		int totalPrice = product.getPrice() * count;
-
-		OrderDTO orderDto = new OrderDTO();
-		orderDto.setUserid(loginUser.getUserid());
-		orderDto.setTotalPrice(totalPrice);
-		orderDto.setAddress(address);
-		orderDto.setPhone(phone);
 
 		OrderDAO oDao = new OrderDAO();
-		boolean isSuccess = oDao.processOrderTransaction(orderDto, p_id, count);
+		OrderDTO orderDto = new OrderDTO();
+		boolean isSuccess = false;
+		int finalTotalPrice = 0;
 
-		if (isSuccess) {
-			loginUser.setMileage(loginUser.getMileage() - totalPrice);
-			session.setAttribute("loginUser", loginUser);
-			response.sendRedirect("orderList?success=1");
+		// --- [2] DTO 공통 데이터 세팅 (이름 일치 작업) ---
+		orderDto.setUserid(loginUser.getUserid());
+		orderDto.setAddress(address);
+		orderDto.setReceiverName(loginUser.getName());
+
+		// [중요] OrderDTO의 두 필드 모두에 값을 넣어 확실히 전달합니다.
+		orderDto.setReceiverPhone(phone);
+		orderDto.setPhone(phone);
+
+		// --- [3] 단품 결제와 장바구니 결제 분기 ---
+		if (pIdArray.length == 1 && totalPriceParam == null) {
+			int p_id = Integer.parseInt(pIdArray[0]);
+			int count = Integer.parseInt(countArray[0]);
+
+			ProductDAO pDao = new ProductDAO();
+			ProductDTO product = pDao.getProductById(p_id);
+			if (product == null) {
+				response.sendRedirect("list");
+				return;
+			}
+
+			finalTotalPrice = product.getPrice() * count;
+			orderDto.setTotalPrice(finalTotalPrice);
+
+			isSuccess = oDao.processOrderTransaction(orderDto, p_id, count);
+
 		} else {
-			response.sendRedirect("detail?id=" + p_id + "&error=transaction_failed");
+			finalTotalPrice = Integer.parseInt(totalPriceParam);
+			orderDto.setTotalPrice(finalTotalPrice);
+
+			List<CartDTO> itemList = new ArrayList<>();
+			for (int i = 0; i < pIdArray.length; i++) {
+				CartDTO item = new CartDTO();
+				item.setP_id(Integer.parseInt(pIdArray[i]));
+				item.setCount(Integer.parseInt(countArray[i]));
+				// 0원 문제 방지를 위해 상품 정보를 가져와서 가격을 넣어주는 것이 안전합니다.
+				itemList.add(item);
+			}
+			isSuccess = oDao.insertOrderFromCart(orderDto, itemList);
+		}
+
+		// --- [4] 결과 처리 ---
+		if (isSuccess) {
+			loginUser.setMileage(loginUser.getMileage() - finalTotalPrice);
+			session.setAttribute("loginUser", loginUser);
+
+			CartDAO cDao = new CartDAO();
+			cDao.clearCart(loginUser.getUserid());
+			session.removeAttribute("cartList");
+
+			// 인코딩 처리 (tmpAddr, tmpPhone으로 안전장치)
+			String encodedAddr = URLEncoder.encode(address, "UTF-8");
+			String encodedPhone = URLEncoder.encode(phone, "UTF-8");
+
+			response.sendRedirect("orderDetail.jsp?orderId=" + orderDto.getOrderId() + "&tmpAddr=" + encodedAddr
+					+ "&tmpPhone=" + encodedPhone);
+		} else {
+			response.sendRedirect("cart?error=transaction_failed");
 		}
 	}
 

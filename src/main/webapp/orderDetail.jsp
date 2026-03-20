@@ -8,15 +8,15 @@ int orderId = 0;
 
 // orderId가 없거나 숫자가 아니면 묻지도 따지지도 않고 목록으로 보냅니다.
 if (orderIdStr == null || orderIdStr.trim().isEmpty()) {
-    response.sendRedirect("orderList");
-    return;
+	response.sendRedirect("orderList");
+	return;
 } else {
-    try {
-        orderId = Integer.parseInt(orderIdStr);
-    } catch (NumberFormatException e) {
-        response.sendRedirect("orderList");
-        return;
-    }
+	try {
+		orderId = Integer.parseInt(orderIdStr);
+	} catch (NumberFormatException e) {
+		response.sendRedirect("orderList");
+		return;
+	}
 }
 
 OrderDAO dao = new OrderDAO();
@@ -99,7 +99,7 @@ if (order == null) {
 						%>
 						<tr>
 							<td style="width: 100px;"><img
-								src="img/<%=item.getImgUrl()%>" class="product-img" alt="상품이미지"></td>
+								src="<%=item.getImgUrl()%>" class="product-img" alt="상품이미지"></td>
 							<td>
 								<div class="fw-bold"><%=item.getProductName()%></div>
 								<div class="small text-muted">
@@ -112,7 +112,7 @@ if (order == null) {
 							</td>
 						</tr>
 						<%
-							}
+						}
 						}
 						%>
 					</tbody>

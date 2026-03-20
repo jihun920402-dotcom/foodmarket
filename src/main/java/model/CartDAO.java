@@ -21,9 +21,12 @@ public class CartDAO {
 
 	private void close() {
 		try {
-			if (rs != null) rs.close();
-			if (pstmt != null) pstmt.close();
-			if (conn != null) conn.close();
+			if (rs != null)
+				rs.close();
+			if (pstmt != null)
+				pstmt.close();
+			if (conn != null)
+				conn.close();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -34,9 +37,8 @@ public class CartDAO {
 		List<CartDTO> list = new ArrayList<>();
 		getConnection();
 		// SQL 스크립트의 c_id, c_count, p_name, p_price, p_img_url 컬럼명 적용
-		String sql = "SELECT c.c_id, c.userid, c.p_id, c.c_count, p.p_name, p.p_price, p.p_img_url " +
-		             "FROM market_cart c JOIN market_products p ON c.p_id = p.p_id " +
-		             "WHERE c.userid = ?";
+		String sql = "SELECT c.c_id, c.userid, c.p_id, c.c_count, p.p_name, p.p_price, p.p_img_url "
+				+ "FROM market_cart c JOIN market_products p ON c.p_id = p.p_id " + "WHERE c.userid = ?";
 		try {
 			if (conn != null) {
 				pstmt = conn.prepareStatement(sql);
@@ -44,13 +46,13 @@ public class CartDAO {
 				rs = pstmt.executeQuery();
 				while (rs.next()) {
 					CartDTO dto = new CartDTO();
-					dto.setCartId(rs.getInt("c_id"));          // DB: c_id
+					dto.setCartId(rs.getInt("c_id")); // DB: c_id
 					dto.setUserid(rs.getString("userid"));
 					dto.setP_id(rs.getInt("p_id"));
-					dto.setCount(rs.getInt("c_count"));        // DB: c_count
+					dto.setCount(rs.getInt("c_count")); // DB: c_count
 					dto.setProductName(rs.getString("p_name")); // DB: p_name
-					dto.setProductPrice(rs.getInt("p_price"));  // DB: p_price
-					dto.setImgUrl(rs.getString("p_img_url"));   // DB: p_img_url
+					dto.setProductPrice(rs.getInt("p_price")); // DB: p_price
+					dto.setImgUrl(rs.getString("p_img_url")); // DB: p_img_url
 					list.add(dto);
 				}
 			}
@@ -119,5 +121,24 @@ public class CartDAO {
 		} finally {
 			close();
 		}
+	}
+
+	// [추가] 특정 사용자의 장바구니 전체 삭제 (OrderServlet 호환용)
+	public int deleteCartByUser(String userid) {
+		getConnection();
+		int result = 0;
+		String sql = "DELETE FROM market_cart WHERE userid = ?";
+		try {
+			if (conn != null) {
+				pstmt = conn.prepareStatement(sql);
+				pstmt.setString(1, userid);
+				result = pstmt.executeUpdate();
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			close();
+		}
+		return result;
 	}
 }
