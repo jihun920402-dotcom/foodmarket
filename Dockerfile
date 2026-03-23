@@ -1,20 +1,20 @@
-# 1. 톰캣 9 버전 이미지를 베이스로 사용 (Java 11 환경)
+# 1. 톰캣 9 버전 사용
 FROM tomcat:9.0-jdk11-openjdk-slim
 
-# 2. 톰캣 기본 기본 앱들(docs, examples 등) 제거하여 가볍게 만들기
+# 2. 기본 앱 제거
 RUN rm -rf /usr/local/tomcat/webapps/*
 
-# 3. 사장님의 JSP 및 정적 파일(src/main/webapp)을 톰캣 ROOT로 복사
-# 폴더 뒤에 /를 붙여서 내용물만 복사되도록 합니다.
+# 3. JSP 및 정적 파일 복사 (webapp 폴더 전체)
 COPY ./src/main/webapp/ /usr/local/tomcat/webapps/ROOT/
 
-# 4. 컴파일된 클래스 파일(.class) 복사
-# 이클립스가 빌드한 결과물(WEB-INF/classes) 위치를 맞추어 복사합니다.
-COPY ./build/classes/ /usr/local/tomcat/webapps/ROOT/WEB-INF/classes/
+# 4. 자바 소스 파일 복사 (빌드 결과물이 깃에 없을 경우를 대비)
+# 만약 .class 파일이 깃에 없다면, 톰캣이 실행될 때 필요한 라이브러리 위치를 확인합니다.
+# 보통 이클립스 프로젝트는 WEB-INF/lib 안에 필요한 jar들이 들어있어야 합니다.
+# 만약 수동으로 빌드된 결과물을 올리고 싶다면 이클립스에서 'Export -> WAR file'을 한 뒤 
+# 그 파일을 올리는 게 정석이지만, 일단은 아래처럼 경로를 단순화해볼게요.
 
-# 5. 라이브러리(JAR) 파일 확인
-# 만약 src/main/webapp/WEB-INF/lib 폴더에 ojdbc, jstl 등이 있다면 3번에서 같이 복사됩니다.
-# 혹시 라이브러리가 다른 곳에 있다면 COPY 명령어를 추가해야 합니다.
+# 에러 났던 빌드 복사 줄을 주석 처리하거나 삭제합니다.
+# COPY ./build/classes/ /usr/local/tomcat/webapps/ROOT/WEB-INF/classes/
 
 EXPOSE 8080
 CMD ["catalina.sh", "run"]
