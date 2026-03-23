@@ -18,6 +18,20 @@ public class ChargeDAO {
 		}
 	}
 
+	// 자원 해제 공통 메서드
+	private void closeAll(Connection conn, PreparedStatement ps, ResultSet rs) {
+		try {
+			if (rs != null)
+				rs.close();
+			if (ps != null)
+				ps.close();
+			if (conn != null)
+				conn.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
 	private void closeAll() {
 		try {
 			if (rs != null)
@@ -57,23 +71,27 @@ public class ChargeDAO {
 		return list;
 	}
 
-	// 2. [회원] 충전 신청 등록 (시퀀스: charge_seq 사용 확인됨)
-	public int insertRequest(String userid, int amount) {
-		int result = 0;
+	// 1. 마일리지 충전 신청 (INSERT)
+	// 사장님 DB 시퀀스: charge_seq / 테이블: market_charge_request
+	public boolean insertChargeRequest(String userid, int amount) {
+		Connection conn = null;
+		PreparedStatement ps = null;
 		String sql = "INSERT INTO market_charge_request (request_id, userid, amount, status, request_date) "
 				+ "VALUES (charge_seq.NEXTVAL, ?, ?, 'pending', SYSDATE)";
+
 		try {
-			getConnection();
-			pstmt = conn.prepareStatement(sql);
-			pstmt.setString(1, userid);
-			pstmt.setInt(2, amount);
-			result = pstmt.executeUpdate();
+			conn = DBConnection.getConnection();
+			ps = conn.prepareStatement(sql);
+			ps.setString(1, userid);
+			ps.setInt(2, amount);
+
+			return ps.executeUpdate() > 0;
 		} catch (Exception e) {
 			e.printStackTrace();
+			return false;
 		} finally {
-			closeAll();
+			closeAll(conn, ps, null);
 		}
-		return result;
 	}
 
 	// 3. [관리자] 대기 중인 신청 목록 조회
@@ -159,5 +177,38 @@ public class ChargeDAO {
 			closeAll();
 		}
 		return result;
+	}
+
+	// 2. 사용자의 충전 내역 조회 (SELECT)
+	// 사장님 DTO 필드명 적용: setRequestId, setRequestDate
+	public List<ChargeDTO> getChargeList(String userid) {
+		List<ChargeDTO> list = new ArrayList<>();
+		Connection conn = null;
+		PreparedStatement ps = null;
+		ResultSet rs = null;
+		String sql = "SELECT * FROM market_charge_request WHERE userid = ? ORDER BY request_date DESC";
+
+		try {
+			conn = DBConnection.getConnection();
+			ps = conn.prepareStatement(sql);
+			ps.setString(1, userid);
+			rs = ps.executeQuery();
+
+			while (rs.next()) {
+				ChargeDTO dto = new ChargeDTO();
+				// DB 컬럼명(언더바) -> DTO 메서드(카멜케이스) 매칭 완료
+				dto.setRequestId(rs.getInt("request_id"));
+				dto.setUserid(rs.getString("userid"));
+				dto.setAmount(rs.getInt("amount"));
+				dto.setStatus(rs.getString("status"));
+				dto.setRequestDate(rs.getTimestamp("request_date"));
+				list.add(dto);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			closeAll(conn, ps, rs);
+		}
+		return list;
 	}
 }

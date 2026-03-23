@@ -3,9 +3,23 @@
 <%@ include file="header.jsp"%>
 
 <%
+    // 서블릿에서 넘겨준 파라미터 받기
     String orderId = request.getParameter("orderId");
-    String totalPrice = request.getParameter("totalPrice");
+    String totalPriceParam = request.getParameter("totalPrice");
     String pName = request.getParameter("pName");
+
+    // [중요] Null 및 데이터 방어 로직
+    if (orderId == null) orderId = "확인중";
+    if (pName == null) pName = "선택 상품";
+    
+    int displayPrice = 0;
+    if (totalPriceParam != null && !totalPriceParam.isEmpty()) {
+        try {
+            displayPrice = Integer.parseInt(totalPriceParam);
+        } catch (NumberFormatException e) {
+            displayPrice = 0;
+        }
+    }
 %>
 
 <div class="container mt-5 text-center">
@@ -26,7 +40,9 @@
 			</div>
 			<div class="d-flex justify-content-between">
 				<span class="text-muted">총 결제 금액</span> <span
-					class="fw-bold text-danger"><%= String.format("%,d", Integer.parseInt(totalPrice)) %>원</span>
+					class="fw-bold text-danger"> <%-- 안전하게 처리된 숫자를 포맷팅하여 출력 --%>
+					<%= String.format("%,d", displayPrice) %>원
+				</span>
 			</div>
 		</div>
 

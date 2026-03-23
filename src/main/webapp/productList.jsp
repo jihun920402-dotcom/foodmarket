@@ -196,8 +196,7 @@
 						%>
 						<span class="star-filled"> <%
  for (int i = 1; i <= 5; i++) {
- %> <%=(i <= p.getAvgRating()) ? "★" : "☆"%>
-							<%
+ %> <%=(i <= p.getAvgRating()) ? "★" : "☆"%> <%
 							}
 							%>
 						</span> <span class="avg-score"><%=p.getAvgRating()%></span> <span

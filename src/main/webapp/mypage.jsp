@@ -78,11 +78,23 @@ String holder = (mInfo != null) ? mInfo.getAccountHolder() : "종합마켓";
 							</div>
 
 							<%-- 사장님 요청: 관리자일 땐 충전 버튼 숨김 --%>
-							<% if (!isAdmin) { %>
+							<%
+							if (!isAdmin) {
+							%>
 							<button type="button" class="btn btn-primary btn-lg"
 								data-bs-toggle="modal" data-bs-target="#chargeModal">
 								마일리지 충전하기</button>
-							<% } %>
+							<%
+							}
+							%>
+							<%
+							if (!isAdmin) {
+							%>
+							<a href="chargeList.jsp" class="btn btn-primary btn-lg"> 마일리지
+								충전내역 </a>
+							<%
+							}
+							%>
 						</div>
 					</div>
 
@@ -107,11 +119,15 @@ String holder = (mInfo != null) ? mInfo.getAccountHolder() : "종합마켓";
 
 					<div class="text-center mt-5">
 						<%-- 사장님 요청: 관리자일 땐 주문 기록 보기 숨김 --%>
-						<% if (!isAdmin) { %>
+						<%
+						if (!isAdmin) {
+						%>
 						<a href="orderList"
 							class="btn btn-info btn-lg px-4 text-white fw-bold me-2">📦
 							주문 기록 보기</a>
-						<% } %>
+						<%
+						}
+						%>
 
 						<button class="btn btn-warning btn-lg px-4 fw-bold"
 							data-bs-toggle="modal" data-bs-target="#editProfileModal">

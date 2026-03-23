@@ -4,6 +4,8 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import common.DBConnection;
+
 public class OrderDAO {
 	private Connection conn;
 	private PreparedStatement pstmt;
@@ -399,5 +401,95 @@ public class OrderDAO {
 			close();
 		}
 		return list;
+	}
+
+	// [수정] 리턴 타입을 boolean에서 int로 바꿨습니다.
+	public int processOrder(MemberDTO user, List<CartDTO> checkoutList, int totalPrice) {
+		Connection conn = null;
+		PreparedStatement psOrder = null;
+		PreparedStatement psItem = null;
+		PreparedStatement psUser = null;
+		PreparedStatement psCart = null;
+		int generatedOrderId = 0;
+
+		try {
+			conn = DBConnection.getConnection();
+			conn.setAutoCommit(false);
+
+			// 1. 주문 메인 (market_orders) - 배송정보 포함
+			String sqlOrder = "INSERT INTO market_orders (order_id, userid, total_price, order_date, receiver_name, receiver_phone, address, status) "
+					+ "VALUES (order_seq.NEXTVAL, ?, ?, SYSDATE, ?, ?, ?, '결제완료')";
+
+			// 생성된 시퀀스 번호를 가져오기 위한 설정
+			psOrder = conn.prepareStatement(sqlOrder, new String[] { "order_id" });
+			psOrder.setString(1, user.getUserid());
+			psOrder.setInt(2, totalPrice);
+			psOrder.setString(3, user.getName());
+			psOrder.setString(4, user.getPhone());
+			psOrder.setString(5, user.getAddress());
+			psOrder.executeUpdate();
+
+			// 방금 생성된 주문번호 뽑기
+			ResultSet rs = psOrder.getGeneratedKeys();
+			if (rs.next()) {
+				generatedOrderId = rs.getInt(1);
+			}
+
+			// 2. 주문 상세 (market_order_items)
+			// 사장님 DB 컬럼명 대조 완료: count, order_price
+			String sqlItem = "INSERT INTO market_order_items (item_id, order_id, p_id, count, order_price) "
+					+ "VALUES (order_item_seq.NEXTVAL, ?, ?, ?, ?)";
+			psItem = conn.prepareStatement(sqlItem);
+			for (CartDTO item : checkoutList) {
+				psItem.setInt(1, generatedOrderId);
+				psItem.setInt(2, item.getP_id());
+				psItem.setInt(3, item.getCount());
+				psItem.setInt(4, item.getProductPrice());
+				psItem.addBatch();
+			}
+			psItem.executeBatch();
+
+			// 3. 마일리지 차감 (market_members)
+			String sqlUser = "UPDATE market_members SET mileage = mileage - ? WHERE userid = ?";
+			psUser = conn.prepareStatement(sqlUser);
+			psUser.setInt(1, totalPrice);
+			psUser.setString(2, user.getUserid());
+			psUser.executeUpdate();
+
+			// 4. 장바구니 삭제 (market_cart)
+			String sqlCart = "DELETE FROM market_cart WHERE c_id = ?";
+			psCart = conn.prepareStatement(sqlCart);
+			for (CartDTO item : checkoutList) {
+				psCart.setInt(1, item.getCartId());
+				psCart.addBatch();
+			}
+			psCart.executeBatch();
+
+			conn.commit();
+			return generatedOrderId; // 성공 시 실제 주문번호(int) 반환
+
+		} catch (Exception e) {
+			try {
+				if (conn != null)
+					conn.rollback();
+			} catch (Exception ex) {
+			}
+			e.printStackTrace();
+			return 0; // 실패 시 0(int) 반환
+		} finally {
+			try {
+				if (psOrder != null)
+					psOrder.close();
+				if (psItem != null)
+					psItem.close();
+				if (psUser != null)
+					psUser.close();
+				if (psCart != null)
+					psCart.close();
+				if (conn != null)
+					conn.close();
+			} catch (Exception e) {
+			}
+		}
 	}
 }

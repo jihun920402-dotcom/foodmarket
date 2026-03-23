@@ -98,8 +98,8 @@ if (order == null) {
 							for (CartDTO item : itemList) {
 						%>
 						<tr>
-							<td style="width: 100px;"><img
-								src="<%=item.getImgUrl()%>" class="product-img" alt="상품이미지"></td>
+							<td style="width: 100px;"><img src="<%=item.getImgUrl()%>"
+								class="product-img" alt="상품이미지"></td>
 							<td>
 								<div class="fw-bold"><%=item.getProductName()%></div>
 								<div class="small text-muted">
