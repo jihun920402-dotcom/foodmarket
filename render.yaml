@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: homepage-h2jw
+    runtime: java
+    envVars:
+      - key: JAVA_VERSION
+        value: 21
