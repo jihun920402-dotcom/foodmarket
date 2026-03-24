@@ -11,10 +11,17 @@ public class MemberDAO {
 
 	private void getConnection() {
 		try {
-			Class.forName("oracle.jdbc.driver.OracleDriver");
-			conn = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521/FREEPDB1", "system", "1234");
+			// 1. PostgreSQL 드라이버 로드
+			Class.forName("org.postgresql.Driver");
+
+			// 2. Render External URL 주소 (사장님의 DB 정보)
+			String url = "jdbc:postgresql://dpg-d70fdteuk2gs7399g6m0-a.singapore-postgres.render.com:5432/shop_vm5g";
+			String user = "admin";
+			String pass = "RrwxAEPyRAWP9FLgGYqSMl8lM6vEQ0Wh";
+
+			conn = DriverManager.getConnection(url, user, pass);
 		} catch (Exception e) {
-			System.out.println("DB 연결 실패: " + e.getMessage());
+			System.out.println("DB 연결 실패 (PostgreSQL): " + e.getMessage());
 		}
 	}
 
