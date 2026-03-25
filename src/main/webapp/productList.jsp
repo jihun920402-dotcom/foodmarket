@@ -29,30 +29,32 @@ if (allProducts != null) {
 %>
 
 <style>
-/* 전체 레이아웃 */
+/* 1. 기본 레이아웃 최적화 */
 .shop-container {
-	max-width: 1200px;
+	width: 95%; /* 고정 폭 대신 퍼센트 사용 */
+	max-width: 1200px; /* PC에서만 최대 폭 제한 */
 	margin: 0 auto;
-	padding: 20px;
+	padding: 10px 0; /* 모바일 여백 축소 */
 }
 
-/* 메인 배너 (중앙 유지) */
+/* 2. 메인 배너 반응형 */
 .main-banner {
 	background: #e0f2fe;
-	padding: 40px;
+	padding: 20px; /* 패딩 축소 */
 	text-align: center;
-	font-size: 24px;
+	font-size: 1.2rem; /* 글자 크기를 유동적으로 */
 	font-weight: bold;
-	border-radius: 15px;
-	margin-bottom: 20px;
+	border-radius: 10px;
+	margin-bottom: 15px;
 	color: #0369a1;
+	word-break: keep-all; /* 한글 줄바꿈 예쁘게 */
 }
 
-/* 검색창 (오른쪽 끝 배치) */
+/* 3. 검색창 모바일 최적화 */
 .search-bar-container {
 	display: flex;
 	justify-content: flex-end;
-	margin-bottom: 30px;
+	margin-bottom: 20px;
 }
 
 .search-form-box {
@@ -61,13 +63,14 @@ if (allProducts != null) {
 	border: 1px solid #cbd5e1;
 	border-radius: 8px;
 	padding: 4px;
-	width: 320px; /* 너비를 살짝 키웠습니다 */
+	width: 100%; /* 모바일에서 가로 꽉 차게 */
+	max-width: 320px; /* PC에선 기존 크기 유지 */
 }
 
 .search-input-field {
 	border: none !important;
 	outline: none !important;
-	width: 100%;
+	flex: 1;
 	padding-left: 10px;
 	font-size: 14px;
 }
@@ -93,18 +96,19 @@ if (allProducts != null) {
 	margin-bottom: 20px;
 }
 
+/* 4. 상품 그리드 (핵심 수정부) */
 .product-grid {
 	display: grid;
 	grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-	gap: 30px;
+	gap: 20px;
 }
 
+/* 5. 상품 카드 내부 비율 고정 */
 .product-card {
 	background: #fff;
 	border-radius: 12px;
 	overflow: hidden;
-	box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-	transition: 0.3s;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 	border: 1px solid #eee;
 	display: flex;
 	flex-direction: column;
@@ -116,7 +120,7 @@ if (allProducts != null) {
 
 .card-img-box {
 	width: 100%;
-	height: 250px;
+	aspect-ratio: 1/1; /* 가로세로 1:1 비율 강제 고정 */
 	overflow: hidden;
 	background: #f8fafc;
 }
@@ -128,28 +132,19 @@ if (allProducts != null) {
 }
 
 .card-body {
-	padding: 15px;
-	flex-grow: 1;
-}
-
-.card-category {
-	font-size: 12px;
-	color: #3b82f6;
-	font-weight: bold;
-	margin-bottom: 5px;
+	padding: 12px;
 }
 
 .card-title {
-	font-size: 16px;
+	font-size: 15px;
 	font-weight: 600;
-	color: #334155;
 	margin-bottom: 5px;
-	height: 45px;
+	height: 40px;
 	overflow: hidden;
 }
 
 .card-price {
-	font-size: 18px;
+	font-size: 16px;
 	font-weight: 800;
 	color: #1e293b;
 }
@@ -195,20 +190,81 @@ if (allProducts != null) {
 	border-left: 1px solid #f1f5f9;
 }
 
+/* 1. 뒤로가기 버튼 (왼쪽 하단) */
+.floating-back {
+	position: fixed;
+	bottom: 20px;
+	left: 20px;
+	width: 50px;
+	height: 50px;
+	background: rgba(255, 255, 255, 0.9);
+	border: 1px solid #cbd5e1;
+	border-radius: 50%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+	cursor: pointer;
+	z-index: 999;
+	text-decoration: none;
+	color: #334155;
+	font-size: 20px;
+	font-weight: bold;
+}
+
+/* 2. TOP 버튼 (오른쪽 하단) */
+.floating-top {
+	position: fixed;
+	bottom: 20px;
+	right: 20px;
+	width: 50px;
+	height: 50px;
+	background: #334155;
+	color: white;
+	border: none;
+	border-radius: 50%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+	cursor: pointer;
+	z-index: 999;
+	font-size: 12px;
+	font-weight: bold;
+	opacity: 0; /* 처음엔 안보임 */
+	transition: 0.3s;
+	visibility: hidden;
+}
+
+.floating-top.show {
+	opacity: 1;
+	visibility: visible;
+}
+/* 6. [중요] 모바일 전용 미디어 쿼리 */
 @media ( max-width : 768px) {
+	.main-banner {
+		font-size: 1rem;
+		padding: 15px;
+	}
+
+	/* 모바일에서는 상품을 2줄로 배치 */
 	.product-grid {
 		grid-template-columns: 1fr 1fr;
-		gap: 15px;
+		gap: 10px;
 	}
-	.card-img-box {
-		height: 160px;
+	.card-body {
+		padding: 8px;
+	}
+	.card-title {
+		font-size: 13px;
+		height: 36px;
+	}
+	.card-price {
+		font-size: 14px;
 	}
 	.search-bar-container {
 		justify-content: center;
-	}
-	.search-form-box {
-		width: 100%;
-	}
+	} /* 검색창 중앙 */
 }
 </style>
 
@@ -240,7 +296,8 @@ if (allProducts != null) {
 		<%
 		if (displayList != null && !displayList.isEmpty()) {
 			for (ProductDTO p : displayList) {
-				String imgPath = (p.getImgUrl() != null && !p.getImgUrl().isEmpty()) ? p.getImgUrl()
+				String imgPath = (p.getImgUrl() != null && !p.getImgUrl().isEmpty())
+				? p.getImgUrl()
 				: "https://via.placeholder.com/300?text=No+Image";
 		%>
 		<div class="product-card">
@@ -261,8 +318,7 @@ if (allProducts != null) {
 						%>
 						<span class="star-filled"> <%
  for (int i = 1; i <= 5; i++) {
- %>
-							<%=(i <= p.getAvgRating()) ? "★" : "☆"%> <%
+ %> <%=(i <= p.getAvgRating()) ? "★" : "☆"%> <%
  }
  %>
 						</span> <span class="avg-score"><%=p.getAvgRating()%></span> <span
@@ -301,8 +357,23 @@ if (allProducts != null) {
 		<div
 			style="grid-column: span 4; text-align: center; padding: 100px; color: #94a3b8;">
 			상품 정보가 없거나 검색 결과가 없습니다.</div>
-		<% } %>
+		<%
+		}
+		%>
 	</div>
 </div>
+
+<script>
+	// 스크롤이 어느 정도 내려가면 TOP 버튼이 나타나게 설정
+	window.onscroll = function() {
+		var topBtn = document.getElementById("topBtn");
+		if (document.body.scrollTop > 300
+				|| document.documentElement.scrollTop > 300) {
+			topBtn.classList.add("show");
+		} else {
+			topBtn.classList.remove("show");
+		}
+	};
+</script>
 
 <%@ include file="footer.jsp"%>
