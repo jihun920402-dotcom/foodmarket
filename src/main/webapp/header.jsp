@@ -20,88 +20,103 @@ String userRole = (loginUser != null) ? loginUser.getRole() : "";
 	href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;700&display=swap"
 	rel="stylesheet">
 <style>
+/* 1. 기본 폰트 및 배경 설정 */
 body {
 	font-family: 'Noto Sans KR', sans-serif;
+	margin: 0;
+	padding: 0;
+	width: 100%;
+	overflow-x: hidden; /* 가로 스크롤 방지 치트키 */
 }
 
 .navbar {
 	background-color: #004d99;
-	padding: 15px 0;
+	padding: 12px 0; /* 높이 살짝 조절 */
 }
 
 .navbar-brand {
-	font-size: 24px;
+	font-size: 22px;
 	font-weight: 700;
 	color: white !important;
+	letter-spacing: -0.5px;
 }
 
 .nav-link {
 	color: rgba(255, 255, 255, 0.9) !important;
 	font-weight: 500;
-	margin-left: 15px;
-}
-
-.nav-link:hover {
-	color: white !important;
+	margin-left: 10px;
 }
 
 .user-name-link {
 	color: #ffcc00 !important;
 	font-weight: 700;
-	text-decoration: none;
+	text-decoration: underline;
 }
 
-.admin-link, .admin-charge-link, .admin-member-link {
-	color: rgba(255, 255, 255, 0.9) !important;
-	font-weight: 500;
-}
-
-/* --- [합체 및 보완] 모바일 반응형 통합 설정 --- */
+/* --- [강력 보완] 모바일 반응형 통합 설정 --- */
 @media ( max-width : 991px) {
-	/* 1. 메뉴 스타일 (기존꺼 그대로) */
+	/* 1. 네비게이션바 정렬 */
+	.navbar-brand {
+		font-size: 19px; /* 모바일에서 로고 크기 살짝 축소 */
+	}
+
+	/* 2. 메뉴 펼침 시 스타일 */
+	.navbar-collapse {
+		background: #004d99; /* 메뉴 배경색 통일 */
+		padding: 15px;
+		border-radius: 0 0 10px 10px;
+		margin-top: 10px;
+	}
+	.nav-item {
+		width: 100%;
+		text-align: left;
+	}
 	.nav-link {
 		margin-left: 0;
-		padding: 10px 0;
+		padding: 12px 5px !important;
 		border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+		font-size: 15px;
 	}
+
+	/* 장바구니 버튼 모바일 최적화 */
 	.ms-3 {
 		margin-left: 0 !important;
-		margin-top: 10px;
+		margin-top: 15px;
 		width: 100%;
-	}
-	.navbar-nav {
-		padding-top: 15px;
-	}
-
-	/* 2. 모든 페이지 공통 최적화 (새로 추가된 치트키) */
-	.container, .shop-container, .main-container {
-		width: 100% !important;
-		padding-left: 15px !important;
-		padding-right: 15px !important;
-	}
-
-	/* 표(Table)가 들어가는 모든 페이지(주문내역, 충전내역 등) 대응 */
-	.card-body, .table-responsive {
-		overflow-x: auto !important;
-		-webkit-overflow-scrolling: touch;
-	}
-	table {
-		min-width: 600px; /* 표가 찌그러지지 않게 보호 */
-	}
-
-	/* 입력창과 버튼을 큼직하게 (회원수정, 충전신청 등 대응) */
-	input[type="text"], input[type="password"], input[type="number"],
-		.form-control {
-		height: 48px !important;
+		display: block;
+		text-align: center;
+		padding: 12px !important;
 		font-size: 16px !important;
 	}
 
-	/* 제목 크기 조절 */
+	/* 3. 공통 컨테이너 쏠림 방지 */
+	.container, .shop-container, .main-container {
+		width: 100% !important;
+		max-width: 100% !important;
+		padding-left: 15px !important;
+		padding-right: 15px !important;
+		box-sizing: border-box !important;
+	}
+
+	/* 4. 테이블(주문목록 등) 대응 - 가로 스크롤 허용 */
+	.table-responsive {
+		border: 0;
+		margin-bottom: 0;
+	}
+
+	/* 5. 입력 필드 모바일 가독성 (터치하기 쉽게) */
+	input, select, textarea, .form-control {
+		font-size: 16px !important; /* 아이폰 자동 줌 방지 */
+		height: auto !important;
+		padding: 10px !important;
+	}
+
+	/* 제목 크기 모바일 최적화 */
 	h2 {
-		font-size: 1.6rem !important;
+		font-size: 1.4rem !important;
 	}
 	h4 {
-		font-size: 1.3rem !important;
+		font-size: 1.1rem !important;
 	}
 }
 </style>

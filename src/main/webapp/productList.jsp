@@ -27,34 +27,42 @@ if (allProducts != null) {
 	}
 }
 %>
-
 <style>
-/* 1. 기본 레이아웃 최적화 */
-.shop-container {
-	width: 95%; /* 고정 폭 대신 퍼센트 사용 */
-	max-width: 1200px; /* PC에서만 최대 폭 제한 */
-	margin: 0 auto;
-	padding: 10px 0; /* 모바일 여백 축소 */
+/* 1. 전역 설정 및 쏠림 방지 (반드시 최상단) */
+html, body {
+	width: 100%;
+	overflow-x: hidden; /* 가로 스크롤 발생 원천 차단 */
+	margin: 0;
+	padding: 0;
 }
 
-/* 2. 메인 배너 반응형 */
+/* 2. 메인 컨테이너 */
+.shop-container {
+	width: 95%;
+	max-width: 1200px;
+	margin: 0 auto;
+	padding: 20px 0;
+	box-sizing: border-box;
+}
+
+/* 3. 메인 배너 */
 .main-banner {
 	background: #e0f2fe;
-	padding: 20px; /* 패딩 축소 */
+	padding: 30px 20px;
 	text-align: center;
-	font-size: 1.2rem; /* 글자 크기를 유동적으로 */
+	font-size: 1.5rem;
 	font-weight: bold;
-	border-radius: 10px;
-	margin-bottom: 15px;
+	border-radius: 15px;
+	margin-bottom: 25px;
 	color: #0369a1;
-	word-break: keep-all; /* 한글 줄바꿈 예쁘게 */
+	word-break: keep-all; /* 한글 단어 단위 줄바꿈 */
 }
 
-/* 3. 검색창 모바일 최적화 */
+/* 4. 검색 영역 */
 .search-bar-container {
 	display: flex;
-	justify-content: flex-end;
-	margin-bottom: 20px;
+	justify-content: flex-end; /* 기본은 오른쪽 정렬 */
+	margin-bottom: 30px;
 }
 
 .search-form-box {
@@ -63,8 +71,8 @@ if (allProducts != null) {
 	border: 1px solid #cbd5e1;
 	border-radius: 8px;
 	padding: 4px;
-	width: 100%; /* 모바일에서 가로 꽉 차게 */
-	max-width: 320px; /* PC에선 기존 크기 유지 */
+	width: 100%;
+	max-width: 320px;
 }
 
 .search-input-field {
@@ -75,43 +83,35 @@ if (allProducts != null) {
 	font-size: 14px;
 }
 
-/* [수정] 검색 버튼 - 글자가 가로로 눕도록 설정 */
 .search-submit-btn {
 	background: #334155;
 	color: white;
 	border: none;
 	border-radius: 6px;
-	padding: 8px 20px; /* 좌우 여백을 늘려 글자 공간 확보 */
+	padding: 8px 20px;
 	font-size: 14px;
 	cursor: pointer;
-	white-space: nowrap; /* 글자가 절대 줄바꿈 되지 않게 고정 */
-	min-width: 70px; /* 최소 너비 지정 */
+	white-space: nowrap; /* 글자 세로로 안 서게 고정 */
+	min-width: 70px;
 }
 
-/* 상품 그리드 및 기타 스타일 */
-.content-header {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	margin-bottom: 20px;
-}
-
-/* 4. 상품 그리드 (핵심 수정부) */
+/* 5. 상품 그리드 (반응형의 핵심) */
 .product-grid {
 	display: grid;
+	/* PC: 최소 250px 너비로 자동 채움 */
 	grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-	gap: 20px;
+	gap: 25px;
 }
 
-/* 5. 상품 카드 내부 비율 고정 */
 .product-card {
 	background: #fff;
 	border-radius: 12px;
 	overflow: hidden;
-	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+	box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
 	border: 1px solid #eee;
 	display: flex;
 	flex-direction: column;
+	transition: transform 0.3s ease;
 }
 
 .product-card:hover {
@@ -120,7 +120,7 @@ if (allProducts != null) {
 
 .card-img-box {
 	width: 100%;
-	aspect-ratio: 1/1; /* 가로세로 1:1 비율 강제 고정 */
+	aspect-ratio: 1/1; /* 정사각형 비율 유지 */
 	overflow: hidden;
 	background: #f8fafc;
 }
@@ -132,107 +132,58 @@ if (allProducts != null) {
 }
 
 .card-body {
-	padding: 12px;
+	padding: 15px;
+	flex-grow: 1;
 }
 
 .card-title {
-	font-size: 15px;
+	font-size: 16px;
 	font-weight: 600;
-	margin-bottom: 5px;
-	height: 40px;
+	margin-bottom: 8px;
+	height: 44px; /* 두 줄까지 표시 */
 	overflow: hidden;
+	color: #334155;
 }
 
 .card-price {
-	font-size: 16px;
+	font-size: 18px;
 	font-weight: 800;
 	color: #1e293b;
 }
 
-.btn-add-product {
-	background: #3b82f6;
-	color: white;
-	padding: 10px 20px;
-	border-radius: 8px;
-	text-decoration: none;
-	font-weight: bold;
-}
-
-.card-review {
-	display: flex;
-	align-items: center;
-	gap: 4px;
-	margin-bottom: 8px;
-	font-size: 13px;
-}
-
-.star-filled {
-	color: #facc15;
-}
-
-.admin-menu {
-	display: flex;
-	border-top: 1px solid #f1f5f9;
-	background: #fafafa;
-}
-
-.admin-btn {
-	flex: 1;
-	text-align: center;
-	padding: 10px;
-	font-size: 13px;
-	text-decoration: none;
-	color: #64748b;
-}
-
-.delete-btn {
-	color: #ef4444;
-	border-left: 1px solid #f1f5f9;
-}
-
-/* 1. 뒤로가기 버튼 (왼쪽 하단) */
-.floating-back {
+/* 6. 플로팅 버튼 (뒤로가기 & TOP) */
+.floating-back, .floating-top {
 	position: fixed;
-	bottom: 20px;
-	left: 20px;
+	bottom: 25px;
 	width: 50px;
 	height: 50px;
-	background: rgba(255, 255, 255, 0.9);
-	border: 1px solid #cbd5e1;
 	border-radius: 50%;
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+	z-index: 1000;
 	cursor: pointer;
-	z-index: 999;
-	text-decoration: none;
-	color: #334155;
-	font-size: 20px;
-	font-weight: bold;
+	transition: 0.3s;
 }
 
-/* 2. TOP 버튼 (오른쪽 하단) */
+.floating-back {
+	left: 20px;
+	background: rgba(255, 255, 255, 0.95);
+	border: 1px solid #cbd5e1;
+	color: #334155;
+	font-size: 20px;
+	text-decoration: none;
+}
+
 .floating-top {
-	position: fixed;
-	bottom: 20px;
 	right: 20px;
-	width: 50px;
-	height: 50px;
 	background: #334155;
 	color: white;
 	border: none;
-	border-radius: 50%;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-	cursor: pointer;
-	z-index: 999;
 	font-size: 12px;
 	font-weight: bold;
-	opacity: 0; /* 처음엔 안보임 */
-	transition: 0.3s;
+	opacity: 0;
 	visibility: hidden;
 }
 
@@ -240,31 +191,48 @@ if (allProducts != null) {
 	opacity: 1;
 	visibility: visible;
 }
-/* 6. [중요] 모바일 전용 미디어 쿼리 */
+
+/* 7. 모바일 전용 미디어 쿼리 (768px 이하) */
 @media ( max-width : 768px) {
 	.main-banner {
-		font-size: 1rem;
-		padding: 15px;
+		font-size: 1.1rem;
+		padding: 20px 10px;
 	}
 
-	/* 모바일에서는 상품을 2줄로 배치 */
-	.product-grid {
-		grid-template-columns: 1fr 1fr;
-		gap: 10px;
-	}
-	.card-body {
-		padding: 8px;
-	}
-	.card-title {
-		font-size: 13px;
-		height: 36px;
-	}
-	.card-price {
-		font-size: 14px;
-	}
+	/* 모바일은 검색창을 중앙으로 */
 	.search-bar-container {
 		justify-content: center;
-	} /* 검색창 중앙 */
+		margin-bottom: 20px;
+	}
+	.search-form-box {
+		max-width: 100%;
+	}
+
+	/* 모바일은 무조건 한 줄에 2개씩 정렬 */
+	.product-grid {
+		grid-template-columns: 1fr 1fr;
+		gap: 12px;
+	}
+	.card-body {
+		padding: 10px;
+	}
+	.card-title {
+		font-size: 14px;
+		height: 38px;
+	}
+	.card-price {
+		font-size: 15px;
+	}
+
+	/* 모바일 플로팅 버튼 위치 미세 조정 */
+	.floating-back {
+		left: 15px;
+		bottom: 20px;
+	}
+	.floating-top {
+		right: 15px;
+		bottom: 20px;
+	}
 }
 </style>
 
