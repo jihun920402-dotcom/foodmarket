@@ -28,12 +28,13 @@ if (allProducts != null) {
 }
 %>
 <style>
-/* 1. 전역 설정 및 쏠림 방지 (반드시 최상단) */
+/* 1. 전역 설정 및 가로 스크롤 방지 */
 html, body {
 	width: 100%;
-	overflow-x: hidden; /* 가로 스크롤 발생 원천 차단 */
+	overflow-x: hidden;
 	margin: 0;
 	padding: 0;
+	-webkit-text-size-adjust: none; /* 아이폰 가로 전환 시 폰트 커짐 방지 */
 }
 
 /* 2. 메인 컨테이너 */
@@ -41,148 +42,178 @@ html, body {
 	width: 95%;
 	max-width: 1200px;
 	margin: 0 auto;
-	padding: 20px 0;
+	padding: 10px 0 50px 0; /* 하단 여백 추가 */
 	box-sizing: border-box;
 }
 
-/* 3. 메인 배너 */
+/* 3. 메인 배너 (반응형 폰트 적용) */
 .main-banner {
-	background: #e0f2fe;
-	padding: 30px 20px;
+	background: #f0f9ff;
+	padding: 25px 15px;
 	text-align: center;
-	font-size: 1.5rem;
-	font-weight: bold;
+	font-size: clamp(1.1rem, 4vw, 1.5rem); /* 화면 크기에 따라 폰트 유연하게 조절 */
+	font-weight: 800;
 	border-radius: 15px;
-	margin-bottom: 25px;
-	color: #0369a1;
-	word-break: keep-all; /* 한글 단어 단위 줄바꿈 */
+	margin-bottom: 20px;
+	color: #0284c7;
+	word-break: keep-all;
+	line-height: 1.4;
+	border: 1px solid #e0f2fe;
 }
 
-/* 4. 검색 영역 */
+/* 4. 검색 영역 (중앙 정렬 최적화) */
 .search-bar-container {
 	display: flex;
-	justify-content: flex-end; /* 기본은 오른쪽 정렬 */
-	margin-bottom: 30px;
+	justify-content: center;
+	margin-bottom: 25px;
 }
 
 .search-form-box {
 	display: flex;
 	background: #ffffff;
-	border: 1px solid #cbd5e1;
-	border-radius: 8px;
+	border: 2px solid #e2e8f0; /* 테두리 조금 더 선명하게 */
+	border-radius: 10px;
 	padding: 4px;
 	width: 100%;
-	max-width: 320px;
+	max-width: 400px;
+	transition: border-color 0.2s;
+}
+
+.search-form-box:focus-within {
+	border-color: #004d99;
 }
 
 .search-input-field {
 	border: none !important;
 	outline: none !important;
 	flex: 1;
-	padding-left: 10px;
-	font-size: 14px;
+	padding: 8px 12px;
+	font-size: 15px;
 }
 
 .search-submit-btn {
-	background: #334155;
+	background: #004d99;
 	color: white;
 	border: none;
-	border-radius: 6px;
-	padding: 8px 20px;
+	border-radius: 7px;
+	padding: 8px 18px;
 	font-size: 14px;
+	font-weight: bold;
 	cursor: pointer;
-	white-space: nowrap; /* 글자 세로로 안 서게 고정 */
-	min-width: 70px;
+	white-space: nowrap;
 }
 
-/* 5. 상품 그리드 (반응형의 핵심) */
+/* 5. 상품 그리드 (PC 4열 -> 태블릿 3열 -> 모바일 2열) */
 .product-grid {
 	display: grid;
-	/* PC: 최소 250px 너비로 자동 채움 */
-	grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-	gap: 25px;
+	grid-template-columns: repeat(4, 1fr);
+	gap: 20px;
+}
+
+@media ( max-width : 1100px) {
+	.product-grid {
+		grid-template-columns: repeat(3, 1fr);
+	}
 }
 
 .product-card {
 	background: #fff;
-	border-radius: 12px;
+	border-radius: 15px;
 	overflow: hidden;
-	box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-	border: 1px solid #eee;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+	border: 1px solid #f1f5f9;
 	display: flex;
 	flex-direction: column;
-	transition: transform 0.3s ease;
+	transition: all 0.3s ease;
 }
 
 .product-card:hover {
-	transform: translateY(-5px);
+	transform: translateY(-7px);
+	box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
 }
 
 .card-img-box {
 	width: 100%;
-	aspect-ratio: 1/1; /* 정사각형 비율 유지 */
+	aspect-ratio: 1/1; /* 정사각형 비율 고정 */
 	overflow: hidden;
 	background: #f8fafc;
+	border-bottom: 1px solid #f1f5f9;
 }
 
 .card-img {
 	width: 100%;
 	height: 100%;
 	object-fit: cover;
+	transition: transform 0.5s;
+}
+
+.product-card:hover .card-img {
+	transform: scale(1.08);
 }
 
 .card-body {
 	padding: 15px;
 	flex-grow: 1;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
 }
 
 .card-title {
-	font-size: 16px;
+	font-size: 15px;
 	font-weight: 600;
 	margin-bottom: 8px;
-	height: 44px; /* 두 줄까지 표시 */
-	overflow: hidden;
 	color: #334155;
+	line-height: 1.4;
+	/* 글자 깨짐 방지 핵심 코드 (2줄 제한) */
+	display: -webkit-box;
+	-webkit-line-clamp: 2;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+	height: 2.8em;
 }
 
 .card-price {
-	font-size: 18px;
+	font-size: 17px;
 	font-weight: 800;
-	color: #1e293b;
+	color: #0f172a;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
 }
 
-/* 6. 플로팅 버튼 (뒤로가기 & TOP) */
+/* 6. 플로팅 버튼 (디자인 개선) */
 .floating-back, .floating-top {
 	position: fixed;
 	bottom: 25px;
-	width: 50px;
-	height: 50px;
+	width: 48px;
+	height: 48px;
 	border-radius: 50%;
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+	box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 	z-index: 1000;
 	cursor: pointer;
 	transition: 0.3s;
+	text-decoration: none;
 }
 
 .floating-back {
 	left: 20px;
-	background: rgba(255, 255, 255, 0.95);
-	border: 1px solid #cbd5e1;
-	color: #334155;
-	font-size: 20px;
-	text-decoration: none;
+	background: white;
+	border: 1px solid #e2e8f0;
+	color: #64748b;
+	font-size: 18px;
 }
 
 .floating-top {
 	right: 20px;
-	background: #334155;
+	background: #004d99;
 	color: white;
 	border: none;
-	font-size: 12px;
-	font-weight: bold;
+	font-size: 11px;
+	font-weight: 900;
 	opacity: 0;
 	visibility: hidden;
 }
@@ -192,46 +223,39 @@ html, body {
 	visibility: visible;
 }
 
-/* 7. 모바일 전용 미디어 쿼리 (768px 이하) */
+/* 7. 모바일 전용 미디어 쿼리 (핵심 최적화) */
 @media ( max-width : 768px) {
-	.main-banner {
-		font-size: 1.1rem;
-		padding: 20px 10px;
+	.shop-container {
+		width: 96%;
 	}
 
-	/* 모바일은 검색창을 중앙으로 */
-	.search-bar-container {
-		justify-content: center;
-		margin-bottom: 20px;
-	}
-	.search-form-box {
-		max-width: 100%;
-	}
-
-	/* 모바일은 무조건 한 줄에 2개씩 정렬 */
+	/* 모바일에서 무조건 한 줄에 2개씩 */
 	.product-grid {
-		grid-template-columns: 1fr 1fr;
+		grid-template-columns: repeat(2, 1fr);
 		gap: 12px;
 	}
 	.card-body {
 		padding: 10px;
 	}
+
+	/* 모바일 글자 크기 미세 조정하여 깨짐 방지 */
 	.card-title {
-		font-size: 14px;
-		height: 38px;
+		font-size: 13px;
+		height: 2.8em;
 	}
 	.card-price {
 		font-size: 15px;
 	}
-
-	/* 모바일 플로팅 버튼 위치 미세 조정 */
+	.floating-back, .floating-top {
+		width: 42px;
+		height: 42px;
+		bottom: 20px;
+	}
 	.floating-back {
 		left: 15px;
-		bottom: 20px;
 	}
 	.floating-top {
 		right: 15px;
-		bottom: 20px;
 	}
 }
 </style>
