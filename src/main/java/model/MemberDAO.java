@@ -9,12 +9,10 @@ public class MemberDAO {
 	private PreparedStatement pstmt;
 	private ResultSet rs;
 
+	// [수정] PostgreSQL 드라이버 및 Render DB 주소 확정
 	private void getConnection() {
 		try {
-			// 1. PostgreSQL 드라이버 로드
 			Class.forName("org.postgresql.Driver");
-
-			// 2. Render External URL 주소 (사장님의 DB 정보)
 			String url = "jdbc:postgresql://dpg-d70fdteuk2gs7399g6m0-a.singapore-postgres.render.com:5432/shop_vm5g";
 			String user = "admin";
 			String pass = "RrwxAEPyRAWP9FLgGYqSMl8lM6vEQ0Wh";
@@ -38,6 +36,7 @@ public class MemberDAO {
 		}
 	}
 
+	// 1. 로그인 체크
 	public MemberDTO loginCheck(String userid, String password) {
 		getConnection();
 		MemberDTO dto = null;
@@ -67,6 +66,7 @@ public class MemberDAO {
 		return dto;
 	}
 
+	// 2. 회원가입 (INSERT)
 	public int insertMember(MemberDTO dto) {
 		getConnection();
 		int result = 0;
@@ -91,6 +91,7 @@ public class MemberDAO {
 		return result;
 	}
 
+	// 3. 내 정보 수정
 	public int updateMember(MemberDTO dto) {
 		getConnection();
 		int result = 0;
@@ -112,6 +113,7 @@ public class MemberDAO {
 		return result;
 	}
 
+	// 4. 마일리지 직접 수정 (승인 시 등)
 	public int updateMileage(String userid, int mileage) {
 		getConnection();
 		int result = 0;
@@ -129,6 +131,7 @@ public class MemberDAO {
 		return result;
 	}
 
+	// 5. 아이디로 회원 정보 조회
 	public MemberDTO getMemberByUserid(String userid) {
 		getConnection();
 		MemberDTO dto = null;
@@ -157,7 +160,7 @@ public class MemberDAO {
 		return dto;
 	}
 
-	// [관리자 전용] 전체 회원 목록 조회 (권한 순, 이름 순 정렬)
+	// 6. [관리자] 전체 회원 목록 조회
 	public List<MemberDTO> getAllMembers() {
 		List<MemberDTO> list = new ArrayList<>();
 		getConnection();
@@ -185,46 +188,41 @@ public class MemberDAO {
 		return list;
 	}
 
-	// [관리자 전용] 회원 강제 탈퇴 (자식 데이터 포함 삭제)
+	// 7. [관리자] 회원 탈퇴 (트랜잭션 적용)
 	public int deleteMember(String userid) {
 		getConnection();
 		int result = 0;
 		try {
-			// 트랜잭션 시작
-			conn.setAutoCommit(false);
+			conn.setAutoCommit(false); // 트랜잭션 시작
 
-			// 1. 장바구니 데이터 삭제
+			// 자식 테이블 데이터 먼저 삭제 (에러 방지)
 			String sql1 = "DELETE FROM market_cart WHERE userid = ?";
 			pstmt = conn.prepareStatement(sql1);
 			pstmt.setString(1, userid);
 			pstmt.executeUpdate();
 
-			// 2. 충전 요청 데이터 삭제
 			String sql2 = "DELETE FROM market_charge_request WHERE userid = ?";
 			pstmt = conn.prepareStatement(sql2);
 			pstmt.setString(1, userid);
 			pstmt.executeUpdate();
 
-			// 3. 주문 내역 데이터 삭제
 			String sql3 = "DELETE FROM market_orders WHERE userid = ?";
 			pstmt = conn.prepareStatement(sql3);
 			pstmt.setString(1, userid);
 			pstmt.executeUpdate();
 
-			// 4. 최종 회원 정보 삭제
+			// 메인 회원 테이블 삭제
 			String sql4 = "DELETE FROM market_members WHERE userid = ?";
 			pstmt = conn.prepareStatement(sql4);
 			pstmt.setString(1, userid);
 			result = pstmt.executeUpdate();
 
-			// 전체 성공 시 커밋
-			conn.commit();
+			conn.commit(); // 성공 시 커밋
 		} catch (Exception e) {
 			try {
 				if (conn != null)
-					conn.rollback(); // 오류 시 되돌리기
+					conn.rollback();
 			} catch (SQLException se) {
-				se.printStackTrace();
 			}
 			e.printStackTrace();
 		} finally {
@@ -233,11 +231,12 @@ public class MemberDAO {
 		return result;
 	}
 
+	// 8. [관리자] 회원 정보 수정
 	public int updateMemberByAdmin(MemberDTO dto) {
 		getConnection();
 		int result = 0;
-		// [수정] 설계도에 맞게 MARKET_MEMBERS (S 추가)로 변경
-		String sql = "UPDATE MARKET_MEMBERS SET name=?, phone=?, address=?, mileage=?, role=? WHERE userid=?";
+		// [수정] 소문자 market_members로 통일 (PostgreSQL 권장)
+		String sql = "UPDATE market_members SET name=?, phone=?, address=?, mileage=?, role=? WHERE userid=?";
 		try {
 			pstmt = conn.prepareStatement(sql);
 			pstmt.setString(1, dto.getName());
@@ -247,6 +246,25 @@ public class MemberDAO {
 			pstmt.setString(5, dto.getRole());
 			pstmt.setString(6, dto.getUserid());
 			result = pstmt.executeUpdate();
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			close();
+		}
+		return result;
+	}
+
+	// 9. 아이디 중복 체크
+	public boolean checkId(String userid) {
+		getConnection();
+		boolean result = false;
+		String sql = "SELECT userid FROM market_members WHERE userid = ?";
+		try {
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setString(1, userid);
+			rs = pstmt.executeQuery();
+			if (rs.next())
+				result = true;
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {

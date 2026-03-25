@@ -9,7 +9,9 @@ String userRole = (loginUser != null) ? loginUser.getRole() : "";
 <html>
 <head>
 <meta charset="UTF-8">
+
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>🌊 종합 마켓</title>
 <link
 	href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
@@ -49,10 +51,58 @@ body {
 	text-decoration: none;
 }
 
-/* 관리자 메뉴 색상 통일 */
 .admin-link, .admin-charge-link, .admin-member-link {
 	color: rgba(255, 255, 255, 0.9) !important;
 	font-weight: 500;
+}
+
+/* --- [합체 및 보완] 모바일 반응형 통합 설정 --- */
+@media ( max-width : 991px) {
+	/* 1. 메뉴 스타일 (기존꺼 그대로) */
+	.nav-link {
+		margin-left: 0;
+		padding: 10px 0;
+		border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+	}
+	.ms-3 {
+		margin-left: 0 !important;
+		margin-top: 10px;
+		width: 100%;
+	}
+	.navbar-nav {
+		padding-top: 15px;
+	}
+
+	/* 2. 모든 페이지 공통 최적화 (새로 추가된 치트키) */
+	.container, .shop-container, .main-container {
+		width: 100% !important;
+		padding-left: 15px !important;
+		padding-right: 15px !important;
+	}
+
+	/* 표(Table)가 들어가는 모든 페이지(주문내역, 충전내역 등) 대응 */
+	.card-body, .table-responsive {
+		overflow-x: auto !important;
+		-webkit-overflow-scrolling: touch;
+	}
+	table {
+		min-width: 600px; /* 표가 찌그러지지 않게 보호 */
+	}
+
+	/* 입력창과 버튼을 큼직하게 (회원수정, 충전신청 등 대응) */
+	input[type="text"], input[type="password"], input[type="number"],
+		.form-control {
+		height: 48px !important;
+		font-size: 16px !important;
+	}
+
+	/* 제목 크기 조절 */
+	h2 {
+		font-size: 1.6rem !important;
+	}
+	h4 {
+		font-size: 1.3rem !important;
+	}
 }
 </style>
 </head>
@@ -60,10 +110,13 @@ body {
 	<nav class="navbar navbar-expand-lg sticky-top shadow-sm">
 		<div class="container">
 			<a class="navbar-brand" href="list">🌊 종합 마켓</a>
+
 			<button class="navbar-toggler" type="button"
-				data-bs-toggle="collapse" data-bs-target="#navbarNav">
+				data-bs-toggle="collapse" data-bs-target="#navbarNav"
+				style="background-color: white;">
 				<span class="navbar-toggler-icon"></span>
 			</button>
+
 			<div class="collapse navbar-collapse" id="navbarNav">
 				<ul class="navbar-nav ms-auto align-items-center">
 					<%
@@ -117,4 +170,8 @@ body {
 			</div>
 		</div>
 	</nav>
+
+	<script
+		src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
 	<div style="padding-top: 20px;"></div>

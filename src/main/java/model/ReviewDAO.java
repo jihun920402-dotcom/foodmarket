@@ -13,14 +13,17 @@ public class ReviewDAO {
 	private PreparedStatement ps;
 	private ResultSet rs;
 
+	// [수정] Render PostgreSQL 연결 설정으로 변경
 	private void getConnection() {
 		try {
-			Class.forName("oracle.jdbc.driver.OracleDriver");
-			String url = "jdbc:oracle:thin:@localhost:1521/FREEPDB1";
-			// 아이디: system / 비밀번호: 1234 반영
-			conn = DriverManager.getConnection(url, "system", "1234");
+			Class.forName("org.postgresql.Driver");
+			String url = "jdbc:postgresql://dpg-d70fdteuk2gs7399g6m0-a.singapore-postgres.render.com:5432/shop_vm5g";
+			String user = "admin";
+			String pass = "RrwxAEPyRAWP9FLgGYqSMl8lM6vEQ0Wh";
+
+			conn = DriverManager.getConnection(url, user, pass);
 		} catch (Exception e) {
-			System.out.println("❌ DB 연결 실패: " + e.getMessage());
+			System.out.println("❌ DB 연결 실패 (PostgreSQL): " + e.getMessage());
 		}
 	}
 
@@ -37,11 +40,11 @@ public class ReviewDAO {
 		}
 	}
 
-	// 1. 리뷰 등록 (AddReviewServlet 호환)
+	// 1. 리뷰 등록 (PostgreSQL SERIAL 대응)
 	public int insertReview(int p_id, String userid, String content, int rating) {
-		// 테이블명을 market_reviews로 정확히 수정했습니다.
-		String sql = "INSERT INTO market_reviews (r_id, p_id, userid, content, rating, r_date) "
-				+ "VALUES (review_seq.NEXTVAL, ?, ?, ?, ?, SYSDATE)";
+		// [수정] r_id는 자동증가(SERIAL)이므로 제외, SYSDATE 대신 CURRENT_TIMESTAMP 사용
+		String sql = "INSERT INTO market_reviews (p_id, userid, content, rating, r_date) "
+				+ "VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)";
 		int result = 0;
 		try {
 			getConnection();
@@ -61,9 +64,8 @@ public class ReviewDAO {
 		return result;
 	}
 
-	// 2. 리뷰 목록 조회 (ProductDetailServlet 호환)
+	// 2. 리뷰 목록 조회
 	public List<ReviewDTO> getReviewsByProduct(int p_id) {
-		// 테이블명을 market_reviews로 정확히 수정했습니다.
 		String sql = "SELECT * FROM market_reviews WHERE p_id = ? ORDER BY r_date DESC";
 		List<ReviewDTO> list = new ArrayList<>();
 		try {
@@ -79,7 +81,7 @@ public class ReviewDAO {
 					r.setUserid(rs.getString("userid"));
 					r.setContent(rs.getString("content"));
 					r.setRating(rs.getInt("rating"));
-					r.setR_date(rs.getDate("r_date")); // Date 타입 호환
+					r.setR_date(rs.getDate("r_date"));
 					list.add(r);
 				}
 			}
@@ -91,9 +93,8 @@ public class ReviewDAO {
 		return list;
 	}
 
-	// 3. 리뷰 수정 (UpdateReviewServlet 호환)
+	// 3. 리뷰 수정
 	public void updateReview(int r_id, String content, int rating) {
-		// 테이블명을 market_reviews로 정확히 수정했습니다.
 		String sql = "UPDATE market_reviews SET content = ?, rating = ? WHERE r_id = ?";
 		try {
 			getConnection();
@@ -111,9 +112,8 @@ public class ReviewDAO {
 		}
 	}
 
-	// 4. 리뷰 삭제 (DeleteReviewServlet 호환)
+	// 4. 리뷰 삭제
 	public int deleteReview(int r_id) {
-		// 테이블명을 market_reviews로 정확히 수정했습니다.
 		String sql = "DELETE FROM market_reviews WHERE r_id = ?";
 		int result = 0;
 		try {

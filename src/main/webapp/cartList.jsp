@@ -1,8 +1,34 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<%@ page import="java.util.*, model.CartDTO, model.MemberDTO" %>
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+	pageEncoding="UTF-8"%>
+<%@ page import="java.util.*, model.CartDTO, model.MemberDTO"%>
 
 <%-- 1. header.jsp를 먼저 포함시킵니다. (여기 안에 loginUser 선언이 이미 있음) --%>
 <%@ include file="header.jsp"%>
+
+<style>
+@media ( max-width : 991px) {
+	/* 1. 테이블이 화면 밖으로 나가지 않도록 가로 스크롤 허용 */
+	.card-body.p-0 {
+		overflow-x: auto;
+		-webkit-overflow-scrolling: touch;
+	}
+	.table {
+		min-width: 600px; /* 테이블이 너무 찌그러지지 않게 최소 너비 고정 */
+		font-size: 14px;
+	}
+
+	/* 2. 결제 요약 카드가 본문 아래로 내려올 때 여백 조정 */
+	.col-lg-4 {
+		margin-top: 30px;
+	}
+
+	/* 3. 상품 이미지 크기 살짝 조절 */
+	.table img {
+		width: 50px !important;
+		height: 50px !important;
+	}
+}
+</style>
 
 <%
     // 2. 이미 header.jsp에서 loginUser가 만들어졌으므로 다시 선언(MemberDTO loginUser = ...)하지 않습니다.

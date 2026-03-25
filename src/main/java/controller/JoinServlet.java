@@ -2,6 +2,8 @@
 package controller;
 
 import java.io.IOException;
+import java.io.PrintWriter;
+
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -36,12 +38,21 @@ public class JoinServlet extends HttpServlet {
 		// 3. DAO 호출
 		MemberDAO dao = new MemberDAO();
 		int result = dao.insertMember(dto);
-
+		PrintWriter out = response.getWriter();
 		// 4. 결과 처리
 		if (result > 0) {
-			response.sendRedirect("login.jsp"); // 가입 성공 시 로그인으로
+			// 가입 성공: 알림창 띄우고 로그인 페이지로 이동
+			out.println("<script>");
+			out.println("alert('🎊 회원가입을 진심으로 축하드립니다! 로그인 후 이용해주세요.');");
+			out.println("location.href='login.jsp';");
+			out.println("</script>");
 		} else {
-			response.sendRedirect("join.jsp"); // 실패 시 가입 페이지 유지
+			// 가입 실패: 알림창 띄우고 뒤로가기
+			out.println("<script>");
+			out.println("alert('회원가입에 실패했습니다. 다시 시도해주세요.');");
+			out.println("history.back();");
+			out.println("</script>");
 		}
+		out.flush();
 	}
 }

@@ -149,6 +149,60 @@
 	line-height: 1.6;
 	margin-top: 10px;
 }
+
+/* [추가 포인트!] 모바일 반응형 스타일 (768px 이하) */
+@media ( max-width : 768px) {
+	/* 1. 좌우 배치를 상하 배치로 변경 */
+	.detail-wrapper {
+		flex-direction: column;
+		padding: 20px;
+		gap: 30px;
+		margin-top: 20px;
+	}
+
+	/* 2. 이미지가 화면 너비에 꽉 차게 조절 */
+	.detail-img-box {
+		max-width: 100%;
+		width: 100%;
+	}
+	.detail-img-box img {
+		height: 300px; /* 휴대폰에선 높이를 조금 줄임 */
+	}
+
+	/* 3. 텍스트 크기 및 여백 조정 */
+	.product-name {
+		font-size: 24px;
+		margin-top: 10px;
+	}
+	.product-price {
+		font-size: 22px;
+	}
+
+	/* 4. 버튼 그룹을 위아래로 쌓기 */
+	.btn-group-custom {
+		flex-direction: column;
+	}
+	.btn-list, .btn-cart {
+		width: 100%;
+		flex: none; /* 기존 3:7 비율 무시 */
+		height: 50px;
+	}
+
+	/* 5. 리뷰 섹션 패딩 줄이기 */
+	.review-section {
+		padding: 20px;
+		margin-top: 20px;
+	}
+	.review-write-card {
+		padding: 15px;
+	}
+
+	/* 6. 리뷰 작성창 별점 선택기 너비 조절 */
+	.form-select.w-auto {
+		width: 100% !important;
+		margin-top: 10px;
+	}
+}
 </style>
 
 <%

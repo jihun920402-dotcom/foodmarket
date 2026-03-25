@@ -3,7 +3,6 @@ package model;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
-
 import common.DBConnection;
 
 public class OrderDAO {
@@ -11,13 +10,16 @@ public class OrderDAO {
 	private PreparedStatement pstmt;
 	private ResultSet rs;
 
-	// [기존 유지] Oracle DB 연결 설정
+	// [수정] Render PostgreSQL 연결 설정
 	private void getConnection() {
 		try {
-			Class.forName("oracle.jdbc.driver.OracleDriver");
-			conn = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521/FREEPDB1", "system", "1234");
+			Class.forName("org.postgresql.Driver");
+			String url = "jdbc:postgresql://dpg-d70fdteuk2gs7399g6m0-a.singapore-postgres.render.com:5432/shop_vm5g";
+			String user = "admin";
+			String pass = "RrwxAEPyRAWP9FLgGYqSMl8lM6vEQ0Wh";
+			conn = DriverManager.getConnection(url, user, pass);
 		} catch (Exception e) {
-			System.out.println("DB 연결 실패: " + e.getMessage());
+			System.out.println("DB 연결 실패 (PostgreSQL): " + e.getMessage());
 		}
 	}
 
@@ -43,8 +45,9 @@ public class OrderDAO {
 		try {
 			conn.setAutoCommit(false);
 
-			String sqlOrder = "INSERT INTO market_orders (order_id, userid, total_price, receiver_name, receiver_phone, address, status) "
-					+ "VALUES (order_seq.NEXTVAL, ?, ?, ?, ?, ?, '결제완료')";
+			// PostgreSQL: SERIAL 사용 시 order_id 제외, CURRENT_TIMESTAMP 사용
+			String sqlOrder = "INSERT INTO market_orders (userid, total_price, receiver_name, receiver_phone, address, status, order_date) "
+					+ "VALUES (?, ?, ?, ?, ?, '결제완료', CURRENT_TIMESTAMP)";
 			pstmt = conn.prepareStatement(sqlOrder);
 			pstmt.setString(1, order.getUserid());
 			pstmt.setInt(2, order.getTotalPrice());
@@ -63,7 +66,6 @@ public class OrderDAO {
 			if (stockResult == 0)
 				throw new Exception("재고 부족");
 
-			// 수정: 테이블명 market_members
 			String sqlMileage = "UPDATE market_members SET mileage = mileage - ? WHERE userid = ? AND mileage >= ?";
 			PreparedStatement psMileage = conn.prepareStatement(sqlMileage);
 			psMileage.setInt(1, order.getTotalPrice());
@@ -81,7 +83,6 @@ public class OrderDAO {
 				if (conn != null)
 					conn.rollback();
 			} catch (SQLException se) {
-				se.printStackTrace();
 			}
 			System.out.println("단품 주문 트랜잭션 실패: " + e.getMessage());
 		} finally {
@@ -91,9 +92,7 @@ public class OrderDAO {
 	}
 
 	/**
-	 * [2. 장바구니 다중 결제 트랜잭션] 수정 내용: 1. 컬럼명 order_item_id -> ITEM_ID 로 변경 (사장님 DB 기준)
-	 * 2. ITEM_ID에 시퀀스(order_item_seq.NEXTVAL) 직접 주입하여 NULL 에러 방지 3. 마일리지 차감 테이블명
-	 * market_members 반영
+	 * [2. 장바구니 다중 결제 트랜잭션]
 	 */
 	public boolean insertOrderFromCart(OrderDTO order, List<CartDTO> items) {
 		getConnection();
@@ -101,9 +100,11 @@ public class OrderDAO {
 		try {
 			conn.setAutoCommit(false);
 
-			// 1. 주문 메인 저장 (market_orders)
-			String sqlOrder = "INSERT INTO market_orders (order_id, userid, total_price, receiver_name, receiver_phone, address, status) VALUES (order_seq.NEXTVAL, ?, ?, ?, ?, ?, '결제완료')";
-			pstmt = conn.prepareStatement(sqlOrder, new String[] { "order_id" });
+			// 1. 주문 메인 저장
+			String sqlOrder = "INSERT INTO market_orders (userid, total_price, receiver_name, receiver_phone, address, status, order_date) "
+					+ "VALUES (?, ?, ?, ?, ?, '결제완료', CURRENT_TIMESTAMP)";
+			// PostgreSQL에서 생성된 키를 가져오는 방식
+			pstmt = conn.prepareStatement(sqlOrder, Statement.RETURN_GENERATED_KEYS);
 			pstmt.setString(1, order.getUserid());
 			pstmt.setInt(2, order.getTotalPrice());
 			pstmt.setString(3, order.getReceiverName());
@@ -117,10 +118,9 @@ public class OrderDAO {
 				newOrderId = rs.getInt(1);
 			}
 
-			// 2. 주문 상세 저장 (에러 발생 지점 수정)
+			// 2. 주문 상세 저장
 			for (CartDTO item : items) {
-				// 사장님 DB 컬럼명인 ITEM_ID를 사용하고 시퀀스를 명시적으로 넣습니다.
-				String sqlItem = "INSERT INTO market_order_items (ITEM_ID, order_id, p_id, count, order_price) VALUES (order_item_seq.NEXTVAL, ?, ?, ?, ?)";
+				String sqlItem = "INSERT INTO market_order_items (order_id, p_id, count, order_price) VALUES (?, ?, ?, ?)";
 				PreparedStatement psItem = conn.prepareStatement(sqlItem);
 				psItem.setInt(1, newOrderId);
 				psItem.setInt(2, item.getP_id());
@@ -129,7 +129,6 @@ public class OrderDAO {
 				psItem.executeUpdate();
 				psItem.close();
 
-				// 재고 차감 (기존 로직 유지)
 				String sqlStock = "UPDATE market_products SET p_stock = p_stock - ? WHERE p_id = ? AND p_stock >= ?";
 				PreparedStatement psStock = conn.prepareStatement(sqlStock);
 				psStock.setInt(1, item.getCount());
@@ -139,7 +138,6 @@ public class OrderDAO {
 				psStock.close();
 			}
 
-			// 3. 마일리지 차감 (테이블명: market_members)
 			String sqlMileage = "UPDATE market_members SET mileage = mileage - ? WHERE userid = ? AND mileage >= ?";
 			PreparedStatement psMileage = conn.prepareStatement(sqlMileage);
 			psMileage.setInt(1, order.getTotalPrice());
@@ -158,7 +156,6 @@ public class OrderDAO {
 				if (conn != null)
 					conn.rollback();
 			} catch (SQLException se) {
-				se.printStackTrace();
 			}
 			System.out.println("장바구니 주문 트랜잭션 실패: " + e.getMessage());
 		} finally {
@@ -167,9 +164,6 @@ public class OrderDAO {
 		return success;
 	}
 
-	/**
-	 * [3. 주문 아이디로 단일 주문 조회] - 상세페이지(25번 라인) 해결
-	 */
 	public OrderDTO getOrderById(int orderId) {
 		OrderDTO dto = null;
 		getConnection();
@@ -197,14 +191,9 @@ public class OrderDAO {
 		return dto;
 	}
 
-	/**
-	 * [4. 특정 주문의 상세 품목 조회] 수정 내용: 사장님 DB 컬럼명 (p_img -> p_img_url) 반영 완료
-	 */
 	public List<CartDTO> getOrderDetailItems(int orderId) {
 		List<CartDTO> list = new ArrayList<>();
 		getConnection();
-
-		// DB 설계도에 맞춰 p.p_img를 p.p_img_url로 변경했습니다.
 		String sql = "SELECT i.p_id, p.p_name, p.p_img_url, i.count, i.order_price " + "FROM market_order_items i "
 				+ "JOIN market_products p ON i.p_id = p.p_id " + "WHERE i.order_id = ?";
 		try {
@@ -215,10 +204,7 @@ public class OrderDAO {
 				CartDTO item = new CartDTO();
 				item.setP_id(rs.getInt("p_id"));
 				item.setProductName(rs.getString("p_name"));
-
-				// ResultSet에서도 p_img_url로 가져옵니다.
 				item.setImgUrl(rs.getString("p_img_url"));
-
 				item.setCount(rs.getInt("count"));
 				item.setProductPrice(rs.getInt("order_price"));
 				list.add(item);
@@ -231,13 +217,9 @@ public class OrderDAO {
 		return list;
 	}
 
-	/**
-	 * [사용자용 주문 내역 조회] DB 테이블(market_orders)의 컬럼명과 100% 매칭 완료
-	 */
 	public List<OrderDTO> getOrderList(String userid) {
 		List<OrderDTO> list = new ArrayList<>();
 		getConnection();
-		// 최신 DB 구조 반영: order_date, total_price, address, status
 		String sql = "SELECT * FROM market_orders WHERE userid = ? ORDER BY order_date DESC";
 		try {
 			pstmt = conn.prepareStatement(sql);
@@ -249,8 +231,8 @@ public class OrderDAO {
 				dto.setUserid(rs.getString("userid"));
 				dto.setTotalPrice(rs.getInt("total_price"));
 				dto.setOrderDate(rs.getTimestamp("order_date"));
-				dto.setReceiverName(rs.getString("receiver_name")); // DB: receiver_name
-				dto.setReceiverPhone(rs.getString("receiver_phone")); // DB: receiver_phone
+				dto.setReceiverName(rs.getString("receiver_name"));
+				dto.setReceiverPhone(rs.getString("receiver_phone"));
 				dto.setAddress(rs.getString("address"));
 				dto.setStatus(rs.getString("status"));
 				list.add(dto);
@@ -263,9 +245,6 @@ public class OrderDAO {
 		return list;
 	}
 
-	/**
-	 * [기존 유지] 관리자용 주문 상태 업데이트
-	 */
 	public int updateOrderStatus(int orderId, String status) {
 		getConnection();
 		int result = 0;
@@ -283,19 +262,12 @@ public class OrderDAO {
 		return result;
 	}
 
-	/**
-	 * [주문 취소/삭제 통합 로직] 1. 마일리지 환불 (market_members) 2. 상품 재고 복구 (market_products) 3.
-	 * 주문 내역 삭제 (market_order_items, market_orders)
-	 */
 	public int deleteOrder(int orderId) {
 		getConnection();
 		int result = 0;
-
 		try {
-			// [중요] 돈과 재고가 걸린 문제이므로 자동 커밋을 끕니다.
 			conn.setAutoCommit(false);
 
-			// 1. 환불 정보를 위해 주문 메인 정보 조회
 			String sqlSelectOrder = "SELECT userid, total_price FROM market_orders WHERE order_id = ?";
 			pstmt = conn.prepareStatement(sqlSelectOrder);
 			pstmt.setInt(1, orderId);
@@ -311,7 +283,6 @@ public class OrderDAO {
 			pstmt.close();
 
 			if (orderUserid != null) {
-				// 2. 마일리지 복구 (UPDATE market_members)
 				String sqlRefund = "UPDATE market_members SET mileage = mileage + ? WHERE userid = ?";
 				pstmt = conn.prepareStatement(sqlRefund);
 				pstmt.setInt(1, refundAmount);
@@ -319,52 +290,39 @@ public class OrderDAO {
 				pstmt.executeUpdate();
 				pstmt.close();
 
-				// 3. 재고 복구 (주문 상세 내역을 돌면서 각 상품 재고를 늘림)
 				String sqlSelectItems = "SELECT p_id, count FROM market_order_items WHERE order_id = ?";
 				pstmt = conn.prepareStatement(sqlSelectItems);
 				pstmt.setInt(1, orderId);
 				ResultSet rsItems = pstmt.executeQuery();
 
-				// 재고 업데이트용 쿼리 (market_products 테이블의 p_stock 컬럼 사용)
 				String sqlRestoreStock = "UPDATE market_products SET p_stock = p_stock + ? WHERE p_id = ?";
 				PreparedStatement psStock = conn.prepareStatement(sqlRestoreStock);
-
 				while (rsItems.next()) {
-					int p_id = rsItems.getInt("p_id");
-					int count = rsItems.getInt("count");
-
-					psStock.setInt(1, count);
-					psStock.setInt(2, p_id);
+					psStock.setInt(1, rsItems.getInt("count"));
+					psStock.setInt(2, rsItems.getInt("p_id"));
 					psStock.executeUpdate();
 				}
 				rsItems.close();
 				psStock.close();
 				pstmt.close();
 
-				// 4. 주문 상세 내역 삭제 (자식 레코드)
 				String sqlDeleteItems = "DELETE FROM market_order_items WHERE order_id = ?";
 				pstmt = conn.prepareStatement(sqlDeleteItems);
 				pstmt.setInt(1, orderId);
 				pstmt.executeUpdate();
 				pstmt.close();
 
-				// 5. 주문 메인 삭제 (부모 레코드)
 				String sqlDeleteOrder = "DELETE FROM market_orders WHERE order_id = ?";
 				pstmt = conn.prepareStatement(sqlDeleteOrder);
 				pstmt.setInt(1, orderId);
 				result = pstmt.executeUpdate();
 			}
-
-			// 모든 로직이 성공했을 때만 DB에 최종 반영
 			conn.commit();
-			System.out.println("주문 취소 성공: 마일리지 및 재고 복구 완료");
-
 		} catch (Exception e) {
 			try {
 				if (conn != null)
-					conn.rollback(); // 하나라도 에러나면 모든 작업을 취소함
+					conn.rollback();
 			} catch (SQLException se) {
-				se.printStackTrace();
 			}
 			e.printStackTrace();
 		} finally {
@@ -373,9 +331,6 @@ public class OrderDAO {
 		return result;
 	}
 
-	/**
-	 * [관리자용 전체 주문 조회] 모든 주문 건을 최신순으로 가져옴
-	 */
 	public List<OrderDTO> getAllOrders() {
 		List<OrderDTO> list = new ArrayList<>();
 		getConnection();
@@ -403,43 +358,29 @@ public class OrderDAO {
 		return list;
 	}
 
-	// [수정] 리턴 타입을 boolean에서 int로 바꿨습니다.
 	public int processOrder(MemberDTO user, List<CartDTO> checkoutList, int totalPrice) {
-		Connection conn = null;
-		PreparedStatement psOrder = null;
-		PreparedStatement psItem = null;
-		PreparedStatement psUser = null;
-		PreparedStatement psCart = null;
 		int generatedOrderId = 0;
-
 		try {
-			conn = DBConnection.getConnection();
+			getConnection();
 			conn.setAutoCommit(false);
 
-			// 1. 주문 메인 (market_orders) - 배송정보 포함
-			String sqlOrder = "INSERT INTO market_orders (order_id, userid, total_price, order_date, receiver_name, receiver_phone, address, status) "
-					+ "VALUES (order_seq.NEXTVAL, ?, ?, SYSDATE, ?, ?, ?, '결제완료')";
+			String sqlOrder = "INSERT INTO market_orders (userid, total_price, order_date, receiver_name, receiver_phone, address, status) "
+					+ "VALUES (?, ?, CURRENT_TIMESTAMP, ?, ?, ?, '결제완료')";
+			pstmt = conn.prepareStatement(sqlOrder, Statement.RETURN_GENERATED_KEYS);
+			pstmt.setString(1, user.getUserid());
+			pstmt.setInt(2, totalPrice);
+			pstmt.setString(3, user.getName());
+			pstmt.setString(4, user.getPhone());
+			pstmt.setString(5, user.getAddress());
+			pstmt.executeUpdate();
 
-			// 생성된 시퀀스 번호를 가져오기 위한 설정
-			psOrder = conn.prepareStatement(sqlOrder, new String[] { "order_id" });
-			psOrder.setString(1, user.getUserid());
-			psOrder.setInt(2, totalPrice);
-			psOrder.setString(3, user.getName());
-			psOrder.setString(4, user.getPhone());
-			psOrder.setString(5, user.getAddress());
-			psOrder.executeUpdate();
-
-			// 방금 생성된 주문번호 뽑기
-			ResultSet rs = psOrder.getGeneratedKeys();
+			rs = pstmt.getGeneratedKeys();
 			if (rs.next()) {
 				generatedOrderId = rs.getInt(1);
 			}
 
-			// 2. 주문 상세 (market_order_items)
-			// 사장님 DB 컬럼명 대조 완료: count, order_price
-			String sqlItem = "INSERT INTO market_order_items (item_id, order_id, p_id, count, order_price) "
-					+ "VALUES (order_item_seq.NEXTVAL, ?, ?, ?, ?)";
-			psItem = conn.prepareStatement(sqlItem);
+			String sqlItem = "INSERT INTO market_order_items (order_id, p_id, count, order_price) VALUES (?, ?, ?, ?)";
+			PreparedStatement psItem = conn.prepareStatement(sqlItem);
 			for (CartDTO item : checkoutList) {
 				psItem.setInt(1, generatedOrderId);
 				psItem.setInt(2, item.getP_id());
@@ -448,26 +389,29 @@ public class OrderDAO {
 				psItem.addBatch();
 			}
 			psItem.executeBatch();
+			psItem.close();
 
-			// 3. 마일리지 차감 (market_members)
-			String sqlUser = "UPDATE market_members SET mileage = mileage - ? WHERE userid = ?";
-			psUser = conn.prepareStatement(sqlUser);
+			String sqlUser = "UPDATE market_members SET mileage = mileage - ? WHERE userid = ? AND mileage >= ?";
+			PreparedStatement psUser = conn.prepareStatement(sqlUser);
 			psUser.setInt(1, totalPrice);
 			psUser.setString(2, user.getUserid());
-			psUser.executeUpdate();
+			psUser.setInt(3, totalPrice);
+			int userUpdate = psUser.executeUpdate();
+			psUser.close();
+			if (userUpdate == 0)
+				throw new Exception("마일리지 부족");
 
-			// 4. 장바구니 삭제 (market_cart)
 			String sqlCart = "DELETE FROM market_cart WHERE c_id = ?";
-			psCart = conn.prepareStatement(sqlCart);
+			PreparedStatement psCart = conn.prepareStatement(sqlCart);
 			for (CartDTO item : checkoutList) {
 				psCart.setInt(1, item.getCartId());
 				psCart.addBatch();
 			}
 			psCart.executeBatch();
+			psCart.close();
 
 			conn.commit();
-			return generatedOrderId; // 성공 시 실제 주문번호(int) 반환
-
+			return generatedOrderId;
 		} catch (Exception e) {
 			try {
 				if (conn != null)
@@ -475,21 +419,9 @@ public class OrderDAO {
 			} catch (Exception ex) {
 			}
 			e.printStackTrace();
-			return 0; // 실패 시 0(int) 반환
+			return 0;
 		} finally {
-			try {
-				if (psOrder != null)
-					psOrder.close();
-				if (psItem != null)
-					psItem.close();
-				if (psUser != null)
-					psUser.close();
-				if (psCart != null)
-					psCart.close();
-				if (conn != null)
-					conn.close();
-			} catch (Exception e) {
-			}
+			close();
 		}
 	}
 }

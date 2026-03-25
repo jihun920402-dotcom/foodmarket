@@ -2,6 +2,27 @@
 	pageEncoding="UTF-8"%>
 <%@ include file="header.jsp"%>
 
+<style>
+/* [추가 포인트!] 로그인 모바일 반응형 스타일 */
+@media ( max-width : 768px) {
+	.col-md-4 {
+		width: 100%;
+	} /* 로그인 카드가 화면 너비에 맞게 */
+	.card {
+		margin: 0 10px; /* 좌우 여백 살짝 줌 */
+	}
+	.form-control {
+		height: 50px; /* 입력창을 큼직하게 */
+		font-size: 16px;
+	}
+	.btn {
+		height: 50px; /* 버튼도 큼직하게 */
+		font-size: 17px;
+		font-weight: bold;
+	}
+}
+</style>
+
 <div class="container mt-5">
 	<div class="row justify-content-center">
 		<div class="col-md-4">
