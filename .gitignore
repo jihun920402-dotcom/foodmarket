@@ -2,3 +2,13 @@
 build/
 .project
 /bin/
+.idae
+out/
+*.class
+.idea/
+.smarttomcat/
+out/
+*.iml
+.classpath
+.project
+.settings/
