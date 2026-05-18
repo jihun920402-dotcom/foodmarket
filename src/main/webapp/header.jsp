@@ -6,195 +6,204 @@
     String userRole = (loginUser != null) ? loginUser.getRole() : "";
 %>
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="ko" class="dark">
 <head>
 <meta charset="UTF-8">
-<%-- 1. 모바일 뷰포트 및 자동 줌 방지 설정 --%>
-<meta name="viewport"
-	content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>푸드마켓</title>
 
-<title>🌊 종합 마켓</title>
-<link
-	href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-	rel="stylesheet">
-<link
-	href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;700&display=swap"
-	rel="stylesheet">
+<!-- Tailwind CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    darkMode: 'class',
+    theme: {
+      extend: {
+        colors: {
+          gold: {
+            DEFAULT: '#c8a96e',
+            dim:     '#a8894e',
+            glow:    'rgba(200,169,110,0.12)',
+          },
+          dark: {
+            base:    '#0a0a0b',
+            surface: '#111113',
+            card:    '#18181c',
+            hover:   '#1e1e24',
+            input:   '#1a1a20',
+          },
+        },
+        fontFamily: {
+          sans: ['Pretendard', 'system-ui', 'sans-serif'],
+        },
+        borderColor: {
+          subtle:  'rgba(255,255,255,0.07)',
+          accent:  'rgba(200,169,110,0.30)',
+        },
+      },
+    },
+  }
+</script>
+
+<!-- Pretendard 폰트 -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" />
+
 <style>
-/* 1. 기본 폰트 및 배경 설정 */
-body {
-	font-family: 'Noto Sans KR', sans-serif;
-	margin: 0;
-	padding: 0;
-	width: 100%;
-	overflow-x: hidden;
-}
+  body {
+    background-color: #0a0a0b;
+    color: #f0ede8;
+    font-family: 'Pretendard', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: #111113; }
+  ::-webkit-scrollbar-thumb { background: #2a2830; border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: #3a3848; }
+  *:focus-visible { outline: 2px solid #c8a96e; outline-offset: 2px; }
 
-.navbar {
-	background-color: #004d99;
-	padding: 12px 0;
-}
+  input, select, textarea {
+    background-color: #1a1a20;
+    border: 1px solid rgba(255,255,255,0.07);
+    color: #f0ede8;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-family: 'Pretendard', sans-serif;
+    font-size: 14px;
+    transition: border-color 0.2s;
+    box-sizing: border-box;
+  }
+  input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: #a8894e;
+  }
+  input::placeholder, textarea::placeholder { color: #4a4850; }
+  input[type="checkbox"], input[type="radio"] {
+    width: 16px !important;
+    height: 16px !important;
+    padding: 0 !important;
+    background: none !important;
+    border: 1px solid rgba(255,255,255,0.2) !important;
+    border-radius: 3px !important;
+    accent-color: #c8a96e;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  input[type="file"] {
+    padding: 8px 12px;
+    cursor: pointer;
+  }
+  select option { background-color: #1a1a20; }
 
-.navbar-brand {
-	font-size: 22px;
-	font-weight: 700;
-	color: white !important;
-	letter-spacing: -0.5px;
-}
-
-.nav-link {
-	color: rgba(255, 255, 255, 0.9) !important;
-	font-weight: 500;
-	margin-left: 10px;
-}
-
-.user-name-link {
-	color: #ffcc00 !important;
-	font-weight: 700;
-	text-decoration: underline;
-}
-
-/* --- [신규] 모바일 상단 퀵 버튼 스타일 --- */
-.mobile-quick-nav {
-	display: none;
-} /* 기본 숨김 */
-
-/* --- 모바일 반응형 통합 설정 --- */
-@media ( max-width : 991px) {
-	.navbar-brand {
-		font-size: 19px;
-	}
-
-	/* 로고 옆 퀵 버튼 노출 */
-	.mobile-quick-nav {
-		display: flex !important;
-		align-items: center;
-		gap: 5px;
-		margin-left: auto; /* 로고와 버튼 사이 간격 */
-		margin-right: 10px;
-	}
-	.quick-btn {
-		font-size: 11px !important;
-		padding: 4px 8px !important;
-		border-radius: 20px !important;
-		white-space: nowrap;
-		text-decoration: none;
-		font-weight: bold;
-	}
-	.btn-user {
-		background: rgba(255, 255, 255, 0.2);
-		color: white;
-		border: 1px solid rgba(255, 255, 255, 0.3);
-	}
-	.btn-cart {
-		background: #ffcc00;
-		color: #004d99;
-		border: none;
-	}
-	.navbar-collapse {
-		background: #004d99;
-		padding: 15px;
-		border-radius: 0 0 10px 10px;
-		margin-top: 10px;
-	}
-	.nav-item {
-		width: 100%;
-		text-align: left;
-	}
-	.nav-link {
-		margin-left: 0;
-		padding: 12px 5px !important;
-		border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-		font-size: 14px; /* 글자 크기 살짝 줄여서 깨짐 방지 */
-	}
-
-	/* 장바구니 버튼 (메뉴 안쪽) */
-	.ms-3 {
-		margin-left: 0 !important;
-		margin-top: 10px;
-		width: 100%;
-		display: block;
-		text-align: center;
-	}
-	.container {
-		padding-left: 15px !important;
-		padding-right: 15px !important;
-	}
-
-	/* 입력필드 자동 줌 방지 */
-	input, select, textarea, .form-control {
-		font-size: 16px !important;
-	}
-}
+  .btn-gold { display: inline-flex; align-items: center; justify-content: center; padding: 10px 24px; border-radius: 8px; background: #c8a96e; color: #0a0a0b; font-size: 14px; font-weight: 600; transition: background 0.2s; border: none; cursor: pointer; }
+  .btn-gold:hover { background: #d4b87e; }
+  .btn-outline { display: inline-flex; align-items: center; justify-content: center; padding: 10px 24px; border-radius: 8px; border: 1px solid rgba(200,169,110,0.35); color: #c8a96e; font-size: 14px; background: transparent; transition: all 0.2s; cursor: pointer; text-decoration: none; }
+  .btn-outline:hover { background: rgba(200,169,110,0.1); }
+  .btn-ghost { display: inline-flex; align-items: center; justify-content: center; padding: 10px 24px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.07); color: #8a8790; font-size: 14px; background: transparent; transition: all 0.2s; cursor: pointer; text-decoration: none; }
+  .btn-ghost:hover { color: #f0ede8; border-color: rgba(255,255,255,0.15); }
+  .btn-danger { display: inline-flex; align-items: center; justify-content: center; padding: 10px 24px; border-radius: 8px; border: 1px solid rgba(226,75,74,0.3); color: #e24b4a; font-size: 14px; background: rgba(226,75,74,0.08); transition: all 0.2s; cursor: pointer; text-decoration: none; }
+  .btn-danger:hover { background: rgba(226,75,74,0.15); }
 </style>
 </head>
-<body>
-	<nav class="navbar navbar-expand-lg sticky-top shadow-sm">
-		<div class="container d-flex align-items-center">
-			<%-- 로고 --%>
-			<a class="navbar-brand" href="list">🌊 종합 마켓</a>
+<body class="bg-[#0a0a0b] text-[#f0ede8] min-h-screen">
 
-			<%-- [추가] 모바일 상단 퀵 버튼 (로그인 상태일 때만 노출) --%>
-			<div class="mobile-quick-nav">
-				<% if (loginUser != null) { %>
-				<a href="mypage.jsp" class="quick-btn btn-user"><%= loginUser.getName() %>님</a>
-				<% if (!"admin".equals(userRole)) { %>
-				<a href="cartList" class="quick-btn btn-cart">🛒 장바구니</a>
-				<% } %>
-				<% } else { %>
-				<a href="login.jsp" class="quick-btn btn-user">로그인</a>
-				<% } %>
-			</div>
+<header class="bg-[#111113] border-b border-[rgba(255,255,255,0.07)] sticky top-0 z-50">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
 
-			<%-- 세 줄 메뉴 버튼 --%>
-			<button class="navbar-toggler" type="button"
-				data-bs-toggle="collapse" data-bs-target="#navbarNav"
-				style="background-color: white; border: none; padding: 5px;">
-				<span class="navbar-toggler-icon" style="width: 20px; height: 20px;"></span>
-			</button>
+    <!-- 로고 -->
+    <a href="list" class="text-[#c8a96e] font-bold text-xl tracking-tight shrink-0">
+      푸드<span class="text-[#f0ede8] font-light">마켓</span>
+    </a>
 
-			<%-- 메뉴 리스트 --%>
-			<div class="collapse navbar-collapse" id="navbarNav">
-				<ul class="navbar-nav ms-auto align-items-center">
-					<% if (loginUser != null) { %>
-					<li class="nav-item"><span class="nav-link">환영합니다, <a
-							href="mypage.jsp" class="user-name-link"><%=loginUser.getName()%></a>님!
-					</span></li>
-					<% } %>
+    <!-- 데스크탑 네비게이션 -->
+    <nav class="hidden lg:flex items-center gap-8 flex-1 justify-center">
+      <a href="list" class="text-sm text-[#8a8790] hover:text-[#f0ede8] transition-colors">전체상품</a>
+      <% if ("admin".equals(userRole)) { %>
+        <a href="adminMemberList.jsp" class="text-sm text-[#8a8790] hover:text-[#f0ede8] transition-colors">회원관리</a>
+        <a href="adminOrderList" class="text-sm text-[#8a8790] hover:text-[#f0ede8] transition-colors">주문관리</a>
+        <a href="adminConfig.jsp" class="text-sm text-[#8a8790] hover:text-[#f0ede8] transition-colors">시스템설정</a>
+        <a href="adminCharge.jsp" class="text-sm text-[#8a8790] hover:text-[#f0ede8] transition-colors">충전승인</a>
+      <% } %>
+    </nav>
 
-					<% if (loginUser == null) { %>
-					<li class="nav-item"><a class="nav-link" href="login.jsp">로그인</a></li>
-					<li class="nav-item"><a class="nav-link" href="join.jsp">회원가입</a></li>
-					<% } else { %>
-					<% if ("admin".equals(userRole)) { %>
-					<li class="nav-item"><a class="nav-link"
-						href="adminMemberList.jsp">👥 회원관리</a></li>
-					<li class="nav-item"><a class="nav-link" href="adminOrderList">📦
-							주문 관리</a></li>
-					<li class="nav-item"><a class="nav-link"
-						href="adminConfig.jsp">⚙️ 시스템 설정</a></li>
-					<li class="nav-item"><a class="nav-link"
-						href="adminCharge.jsp">💳 충전 승인</a></li>
-					<% } %>
+    <!-- 데스크탑 우측 메뉴 -->
+    <div class="hidden lg:flex items-center gap-3 shrink-0">
+      <% if (loginUser != null) { %>
+        <a href="mypage.jsp" class="text-sm text-[#c8a96e] font-medium hover:text-[#d4b87e] transition-colors"><%= loginUser.getName() %>님</a>
+        <% if (!"admin".equals(userRole)) { %>
+        <a href="cartList"
+           class="flex items-center gap-1.5 px-4 py-2 rounded-lg text-[#c8a96e] text-sm
+                  bg-[rgba(200,169,110,0.08)] border border-[rgba(200,169,110,0.25)]
+                  hover:bg-[rgba(200,169,110,0.15)] transition-all">
+          장바구니
+        </a>
+        <% } %>
+        <a href="logout"
+           onclick="return confirm('로그아웃 하시겠습니까?')"
+           class="px-4 py-2 rounded-lg text-sm text-[#8a8790] border border-[rgba(255,255,255,0.07)]
+                  hover:text-[#f0ede8] hover:border-[rgba(255,255,255,0.15)] transition-all">
+          로그아웃
+        </a>
+      <% } else { %>
+        <a href="login.jsp"
+           class="px-4 py-2 rounded-lg text-sm text-[#8a8790] border border-[rgba(255,255,255,0.07)]
+                  hover:text-[#f0ede8] hover:border-[rgba(255,255,255,0.15)] transition-all">
+          로그인
+        </a>
+        <a href="join.jsp"
+           class="px-4 py-2 rounded-lg text-sm bg-[#c8a96e] text-[#0a0a0b] font-semibold
+                  hover:bg-[#d4b87e] transition-colors">
+          회원가입
+        </a>
+      <% } %>
+    </div>
 
-					<% if (!"admin".equals(userRole)) { %>
-					<li class="nav-item"><a href="cartList"
-						class="btn btn-warning btn-sm ms-3 text-dark fw-bold d-none d-lg-inline-block">🛒
-							장바구니</a></li>
-					<li class="nav-item d-lg-none"><a class="nav-link"
-						href="cartList">🛒 장바구니 이동</a></li>
-					<% } %>
+    <!-- 모바일: 장바구니 + 햄버거 -->
+    <div class="flex lg:hidden items-center gap-2">
+      <% if (loginUser != null && !"admin".equals(userRole)) { %>
+      <a href="cartList" class="px-3 py-2 rounded-lg text-xs text-[#c8a96e] bg-[rgba(200,169,110,0.08)] border border-[rgba(200,169,110,0.25)]">장바구니</a>
+      <% } %>
+      <button onclick="toggleMobileMenu()"
+              class="p-2 rounded-lg text-[#8a8790] hover:text-[#f0ede8] hover:bg-[rgba(255,255,255,0.07)] transition-all">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+        </svg>
+      </button>
+    </div>
+  </div>
 
-					<li class="nav-item"><a class="nav-link" href="logout"
-						onclick="return confirm('로그아웃 하시겠습니까?')">로그아웃</a></li>
-					<% } %>
-				</ul>
-			</div>
-		</div>
-	</nav>
+  <!-- 모바일 드롭다운 -->
+  <div id="mobileMenu" class="hidden lg:hidden border-t border-[rgba(255,255,255,0.07)] bg-[#111113]">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex flex-col gap-1">
+      <a href="list" class="px-4 py-3 text-sm text-[#8a8790] hover:text-[#f0ede8] hover:bg-[rgba(255,255,255,0.05)] rounded-lg transition-all">전체상품</a>
+      <% if (loginUser != null) { %>
+        <a href="mypage.jsp" class="px-4 py-3 text-sm text-[#c8a96e] hover:bg-[rgba(255,255,255,0.05)] rounded-lg transition-all"><%= loginUser.getName() %>님의 마이페이지</a>
+        <% if ("admin".equals(userRole)) { %>
+          <a href="adminMemberList.jsp" class="px-4 py-3 text-sm text-[#8a8790] hover:text-[#f0ede8] hover:bg-[rgba(255,255,255,0.05)] rounded-lg transition-all">회원관리</a>
+          <a href="adminOrderList" class="px-4 py-3 text-sm text-[#8a8790] hover:text-[#f0ede8] hover:bg-[rgba(255,255,255,0.05)] rounded-lg transition-all">주문관리</a>
+          <a href="adminConfig.jsp" class="px-4 py-3 text-sm text-[#8a8790] hover:text-[#f0ede8] hover:bg-[rgba(255,255,255,0.05)] rounded-lg transition-all">시스템설정</a>
+          <a href="adminCharge.jsp" class="px-4 py-3 text-sm text-[#8a8790] hover:text-[#f0ede8] hover:bg-[rgba(255,255,255,0.05)] rounded-lg transition-all">충전승인</a>
+        <% } %>
+        <div class="border-t border-[rgba(255,255,255,0.07)] my-1"></div>
+        <a href="logout" onclick="return confirm('로그아웃 하시겠습니까?')"
+           class="px-4 py-3 text-sm text-[#8a8790] hover:text-[#f0ede8] hover:bg-[rgba(255,255,255,0.05)] rounded-lg transition-all">로그아웃</a>
+      <% } else { %>
+        <a href="login.jsp" class="px-4 py-3 text-sm text-[#8a8790] hover:text-[#f0ede8] hover:bg-[rgba(255,255,255,0.05)] rounded-lg transition-all">로그인</a>
+        <a href="join.jsp" class="px-4 py-3 text-sm text-[#8a8790] hover:text-[#f0ede8] hover:bg-[rgba(255,255,255,0.05)] rounded-lg transition-all">회원가입</a>
+      <% } %>
+    </div>
+  </div>
+</header>
 
-	<script
-		src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-	<%-- 상단바 고정으로 인한 본문 겹침 방지 여백 --%>
-	<div style="padding-top: 15px;"></div>
+<script>
+function toggleMobileMenu() {
+  document.getElementById('mobileMenu').classList.toggle('hidden');
+}
+function openModal(id) {
+  document.getElementById(id).classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+}
+function closeModal(id) {
+  document.getElementById(id).classList.add('hidden');
+  document.body.style.overflow = '';
+}
+</script>

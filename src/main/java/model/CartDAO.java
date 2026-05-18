@@ -10,19 +10,6 @@ public class CartDAO {
 	private PreparedStatement pstmt;
 	private ResultSet rs;
 
-	// [수정] Render PostgreSQL 연결 정보 (사장님의 실시간 DB 주소 반영)
-	private void getConnection() {
-		try {
-			Class.forName("org.postgresql.Driver");
-			String url = "jdbc:postgresql://dpg-d70fdteuk2gs7399g6m0-a.singapore-postgres.render.com:5432/shop_vm5g";
-			String user = "admin";
-			String pass = "RrwxAEPyRAWP9FLgGYqSMl8lM6vEQ0Wh";
-			conn = DriverManager.getConnection(url, user, pass);
-		} catch (Exception e) {
-			System.out.println("DB 연결 실패 (PostgreSQL): " + e.getMessage());
-		}
-	}
-
 	private void close() {
 		try {
 			if (rs != null)

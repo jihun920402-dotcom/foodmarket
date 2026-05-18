@@ -7,6 +7,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
 import model.MemberDAO;
 import model.MemberDTO;
+import common.PasswordUtil;
 
 @WebServlet("/login")
 public class LoginServlet extends HttpServlet {
@@ -14,7 +15,7 @@ public class LoginServlet extends HttpServlet {
 			throws ServletException, IOException {
 
 		String userid = request.getParameter("userid");
-		String password = request.getParameter("password");
+		String password = PasswordUtil.hash(request.getParameter("password"));
 
 		MemberDAO dao = new MemberDAO();
 		MemberDTO user = dao.loginCheck(userid, password);

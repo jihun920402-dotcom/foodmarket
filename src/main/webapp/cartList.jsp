@@ -3,183 +3,160 @@
 <%@ page import="java.util.*, model.CartDTO, model.MemberDTO"%>
 <%@ include file="header.jsp"%>
 
-<style>
-/* [추가] 장바구니 비어있음 중앙 정렬 및 상품명 줄바꿈 설정 */
-.empty-cart-cell {
-	text-align: center !important;
-	padding: 80px 0 !important;
-	font-size: 16px;
-	color: #94a3b8;
-}
-
-.product-info-cell {
-	white-space: normal !important; /* 줄바꿈 허용 */
-	word-break: keep-all; /* 한글 단어 단위 줄바꿈 */
-	min-width: 120px; /* 모바일 최소 너비 */
-	line-height: 1.4;
-}
-
-@media ( max-width : 991px) {
-	.card-body.p-0 {
-		overflow-x: auto;
-		-webkit-overflow-scrolling: touch;
-	}
-	.table {
-		min-width: 600px;
-		font-size: 14px;
-	}
-	.col-lg-4 {
-		margin-top: 30px;
-	}
-	.table img {
-		width: 50px !important;
-		height: 50px !important;
-	}
-}
-</style>
-
 <%
-    List<CartDTO> cartList = (List<CartDTO>) request.getAttribute("cartList");
-    int totalMileage = (loginUser != null) ? loginUser.getMileage() : 0;
+List<CartDTO> cartList = (List<CartDTO>) request.getAttribute("cartList");
+int totalMileage = (loginUser != null) ? loginUser.getMileage() : 0;
 %>
 
-<div class="container" style="margin-top: 50px; margin-bottom: 100px;">
-	<h2 class="mb-4">
-		<i class="bi bi-cart4"></i> 나의 장바구니
-	</h2>
+<main class="max-w-7xl mx-auto px-4 sm:px-6 py-10">
+  <div class="mb-8">
+    <h1 class="text-2xl font-bold text-[#f0ede8] tracking-tight">장바구니</h1>
+    <p class="text-sm text-[#8a8790] mt-1">담은 상품을 확인하고 결제하세요</p>
+  </div>
 
-	<div class="row">
-		<div class="col-lg-8">
-			<div class="card shadow-sm"
-				style="border-radius: 15px; border: none;">
-				<div class="card-body p-0">
-					<table class="table mb-0" style="vertical-align: middle;">
-						<thead class="table-light">
-							<tr class="text-center">
-								<th style="width: 50px;"><input type="checkbox"
-									id="selectAll" class="form-check-input" checked
-									onclick="toggleAll(this)"></th>
-								<th>상품정보</th>
-								<th>가격</th>
-								<th style="width: 150px;">수량</th>
-								<th>소계</th>
-								<th>관리</th>
-							</tr>
-						</thead>
-						<tbody>
-							<% if (cartList == null || cartList.isEmpty()) { %>
-							<tr>
-								<td colspan="6" class="empty-cart-cell">장바구니가 비어 있습니다.</td>
-							</tr>
-							<% } else { 
-                                for (CartDTO item : cartList) { %>
-							<tr class="text-center cart-item-row">
-								<td><input type="checkbox" name="selectedItems"
-									class="form-check-input item-check"
-									value="<%= item.getCartId() %>"
-									data-price="<%= item.getProductPrice() %>"
-									data-count="<%= item.getCount() %>" checked
-									onclick="updateTotal()"></td>
-								<td class="text-start product-info-cell">
-									<div class="d-flex align-items-center">
-										<img src="<%= item.getImgUrl() %>"
-											style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px; margin-right: 15px;">
-										<span class="fw-bold"><%= item.getProductName() %></span>
-									</div>
-								</td>
-								<td><%= String.format("%,d", item.getProductPrice()) %>원</td>
-								<td>
-									<form action="updateCart" method="post"
-										class="d-flex align-items-center justify-content-center gap-1">
-										<input type="hidden" name="cartId"
-											value="<%= item.getCartId() %>">
-										<button type="submit" name="count"
-											value="<%= item.getCount() - 1 %>"
-											class="btn btn-sm btn-outline-secondary"
-											<%= item.getCount() <= 1 ? "disabled" : "" %>>-</button>
-										<input type="text" value="<%= item.getCount() %>" readonly
-											style="width: 35px; text-align: center; border: 1px solid #ddd;">
-										<button type="submit" name="count"
-											value="<%= item.getCount() + 1 %>"
-											class="btn btn-sm btn-outline-secondary">+</button>
-									</form>
-								</td>
-								<td class="text-primary fw-bold"><span><%= String.format("%,d", item.getProductPrice() * item.getCount()) %></span>원</td>
-								<td><button class="btn btn-sm btn-outline-danger"
-										onclick="if(confirm('삭제하시겠습니까?')) location.href='deleteCart?id=<%= item.getCartId() %>'">삭제</button></td>
-							</tr>
-							<% } } %>
-						</tbody>
-					</table>
-				</div>
-			</div>
-		</div>
+  <div class="flex flex-col lg:flex-row gap-6">
 
-		<div class="col-lg-4">
-			<div class="card shadow-sm"
-				style="border-radius: 15px; border: none; background-color: #f8f9fa;">
-				<div class="card-header bg-dark text-white text-center py-3">
-					<h5 class="mb-0">결제 요약</h5>
-				</div>
-				<div class="card-body p-4">
-					<div class="d-flex justify-content-between mb-3">
-						<span class="text-muted">최종 결제금액</span>
-						<h4 class="text-danger fw-bold">
-							<span id="totalPriceDisplay">0</span>원
-						</h4>
-					</div>
-					<div class="bg-white p-3 rounded-3 border mb-4">
-						<small class="text-muted d-block mb-1">나의 보유 마일리지</small>
-						<h5 class="mb-2 text-primary"><%= String.format("%,d", totalMileage) %>원
-						</h5>
-						<hr>
-						<small class="text-muted d-block mb-1">결제 후 잔여 마일리지</small>
-						<h5 class="mb-0">
-							<span id="remainingMileageDisplay">0</span>
-						</h5>
-						<input type="hidden" id="currentUserMileage"
-							value="<%= totalMileage %>">
-					</div>
-					<form action="OrderServlet" method="post" id="checkoutForm">
-						<input type="hidden" name="selectedCartIds" id="selectedCartIds">
-						<button type="button" onclick="submitCheckout()"
-							class="btn btn-primary w-100 py-3 fw-bold">결제하기</button>
-					</form>
-				</div>
-			</div>
-		</div>
-	</div>
-</div>
+    <!-- 상품 목록 -->
+    <div class="flex-1 bg-[#18181c] border border-[rgba(255,255,255,0.07)] rounded-2xl overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm" style="min-width: 580px;">
+          <thead>
+            <tr class="border-b border-[rgba(255,255,255,0.07)]">
+              <th class="px-4 py-3.5 w-10">
+                <input type="checkbox" id="selectAll" checked onclick="toggleAll(this)" style="width:16px!important;">
+              </th>
+              <th class="px-4 py-3.5 text-left text-[10px] font-medium tracking-[0.1em] uppercase text-[#8a8790]">상품정보</th>
+              <th class="px-4 py-3.5 text-center text-[10px] font-medium tracking-[0.1em] uppercase text-[#8a8790]">가격</th>
+              <th class="px-4 py-3.5 text-center text-[10px] font-medium tracking-[0.1em] uppercase text-[#8a8790] w-36">수량</th>
+              <th class="px-4 py-3.5 text-center text-[10px] font-medium tracking-[0.1em] uppercase text-[#8a8790]">소계</th>
+              <th class="px-4 py-3.5 text-center text-[10px] font-medium tracking-[0.1em] uppercase text-[#8a8790]">관리</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% if (cartList == null || cartList.isEmpty()) { %>
+            <tr>
+              <td colspan="6" class="text-center py-20 text-[#4a4850]">장바구니가 비어 있습니다.</td>
+            </tr>
+            <% } else {
+                 for (CartDTO item : cartList) { %>
+            <tr class="border-b border-[rgba(255,255,255,0.05)] hover:bg-[rgba(255,255,255,0.02)] transition-colors cart-item-row">
+              <td class="px-4 py-4 text-center">
+                <input type="checkbox" name="selectedItems" class="item-check"
+                       value="<%= item.getCartId() %>"
+                       data-price="<%= item.getProductPrice() %>"
+                       data-count="<%= item.getCount() %>"
+                       checked onclick="updateTotal()" style="width:16px!important;">
+              </td>
+              <td class="px-4 py-4">
+                <div class="flex items-center gap-3">
+                  <img src="<%= item.getImgUrl() %>" alt=""
+                       style="width:52px; height:52px; object-fit:cover; border-radius:8px; border:1px solid rgba(255,255,255,0.07); flex-shrink:0;">
+                  <span class="text-sm font-medium text-[#f0ede8]"><%= item.getProductName() %></span>
+                </div>
+              </td>
+              <td class="px-4 py-4 text-center text-sm text-[#8a8790]"><%= String.format("%,d", item.getProductPrice()) %>원</td>
+              <td class="px-4 py-4 text-center">
+                <form action="updateCart" method="post" class="inline-flex items-center gap-1">
+                  <input type="hidden" name="cartId" value="<%= item.getCartId() %>">
+                  <button type="submit" name="count" value="<%= item.getCount() - 1 %>"
+                          <%= item.getCount() <= 1 ? "disabled" : "" %>
+                          class="w-7 h-7 rounded-lg border border-[rgba(255,255,255,0.07)] text-[#8a8790] hover:text-[#f0ede8] hover:border-[rgba(255,255,255,0.2)] transition-all disabled:opacity-30"
+                          style="background:none; cursor:pointer; font-size:16px; padding:0;">−</button>
+                  <input type="text" value="<%= item.getCount() %>" readonly
+                         style="width:36px; text-align:center; border:1px solid rgba(255,255,255,0.07); padding:4px; font-size:13px;">
+                  <button type="submit" name="count" value="<%= item.getCount() + 1 %>"
+                          class="w-7 h-7 rounded-lg border border-[rgba(255,255,255,0.07)] text-[#8a8790] hover:text-[#f0ede8] hover:border-[rgba(255,255,255,0.2)] transition-all"
+                          style="background:none; cursor:pointer; font-size:16px; padding:0;">+</button>
+                </form>
+              </td>
+              <td class="px-4 py-4 text-center text-sm font-semibold text-[#c8a96e]">
+                <span><%= String.format("%,d", item.getProductPrice() * item.getCount()) %></span>원
+              </td>
+              <td class="px-4 py-4 text-center">
+                <button onclick="if(confirm('삭제하시겠습니까?')) location.href='deleteCart?id=<%= item.getCartId() %>'"
+                        class="text-xs text-[#e24b4a] hover:text-red-400 transition-colors px-3 py-1.5 rounded-lg border border-[rgba(226,75,74,0.25)] hover:bg-[rgba(226,75,74,0.08)]"
+                        style="background:none; cursor:pointer;">삭제</button>
+              </td>
+            </tr>
+            <% } } %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 결제 요약 -->
+    <div class="lg:w-72 shrink-0">
+      <div class="bg-[#18181c] border border-[rgba(255,255,255,0.07)] rounded-2xl overflow-hidden sticky top-20">
+        <div class="px-5 py-4 border-b border-[rgba(255,255,255,0.07)]">
+          <h3 class="text-sm font-bold text-[#f0ede8]">결제 요약</h3>
+        </div>
+        <div class="p-5 space-y-4">
+          <div class="flex justify-between items-center">
+            <span class="text-sm text-[#8a8790]">최종 결제금액</span>
+            <span class="text-xl font-bold text-[#c8a96e]"><span id="totalPriceDisplay">0</span>원</span>
+          </div>
+
+          <div class="bg-[#141418] border border-[rgba(255,255,255,0.05)] rounded-xl p-4 space-y-3">
+            <div>
+              <p class="text-[11px] text-[#4a4850] mb-1">보유 마일리지</p>
+              <p class="text-base font-semibold text-[#f0ede8]"><%= String.format("%,d", totalMileage) %>원</p>
+            </div>
+            <div class="border-t border-[rgba(255,255,255,0.05)] pt-3">
+              <p class="text-[11px] text-[#4a4850] mb-1">결제 후 잔여 마일리지</p>
+              <p class="text-base font-semibold" id="remainingMileageDisplay">0원</p>
+            </div>
+          </div>
+
+          <input type="hidden" id="currentUserMileage" value="<%= totalMileage %>">
+
+          <form action="OrderServlet" method="post" id="checkoutForm">
+            <input type="hidden" name="selectedCartIds" id="selectedCartIds">
+            <button type="button" onclick="submitCheckout()"
+                    class="w-full py-3.5 rounded-xl bg-[#c8a96e] text-[#0a0a0b] text-sm font-bold hover:bg-[#d4b87e] transition-colors"
+                    style="border:none; cursor:pointer; width:100%;">
+              결제하기
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
 
 <script>
 function updateTotal() {
-    const checkboxes = document.querySelectorAll('.item-check:checked');
-    let total = 0;
-    let selectedIds = [];
-    checkboxes.forEach(cb => {
-        total += (parseInt(cb.getAttribute('data-price')) * parseInt(cb.getAttribute('data-count')));
-        selectedIds.push(cb.value);
-    });
-    document.getElementById('totalPriceDisplay').innerText = total.toLocaleString();
-    const currentMileage = parseInt(document.getElementById('currentUserMileage').value);
-    const remaining = currentMileage - total;
-    const remainingDisplay = document.getElementById('remainingMileageDisplay');
-    remainingDisplay.innerText = remaining.toLocaleString() + "원";
-    remainingDisplay.style.color = (remaining < 0) ? 'red' : 'black';
-    document.getElementById('selectedCartIds').value = selectedIds.join(',');
+  const checkboxes = document.querySelectorAll('.item-check:checked');
+  let total = 0;
+  let selectedIds = [];
+  checkboxes.forEach(cb => {
+    total += parseInt(cb.getAttribute('data-price')) * parseInt(cb.getAttribute('data-count'));
+    selectedIds.push(cb.value);
+  });
+  document.getElementById('totalPriceDisplay').innerText = total.toLocaleString();
+  const currentMileage = parseInt(document.getElementById('currentUserMileage').value);
+  const remaining = currentMileage - total;
+  const display = document.getElementById('remainingMileageDisplay');
+  display.innerText = remaining.toLocaleString() + "원";
+  display.style.color = remaining < 0 ? '#e24b4a' : '#f0ede8';
+  document.getElementById('selectedCartIds').value = selectedIds.join(',');
 }
+
 function submitCheckout() {
-    const selectedIds = document.getElementById('selectedCartIds').value;
-    const currentMileage = parseInt(document.getElementById('currentUserMileage').value);
-    const totalPrice = parseInt(document.getElementById('totalPriceDisplay').innerText.replace(/,/g, ''));
-    if (!selectedIds) { alert("상품을 선택해주세요."); return; }
-    if (currentMileage < totalPrice) { alert("마일리지가 부족합니다."); return; }
-    if (confirm("결제하시겠습니까?")) { document.getElementById('checkoutForm').submit(); }
+  const selectedIds = document.getElementById('selectedCartIds').value;
+  const currentMileage = parseInt(document.getElementById('currentUserMileage').value);
+  const totalPrice = parseInt(document.getElementById('totalPriceDisplay').innerText.replace(/,/g, ''));
+  if (!selectedIds) { alert("상품을 선택해주세요."); return; }
+  if (currentMileage < totalPrice) { alert("마일리지가 부족합니다."); return; }
+  if (confirm("결제하시겠습니까?")) document.getElementById('checkoutForm').submit();
 }
-window.onload = updateTotal;
+
 function toggleAll(selectAllBox) {
-    document.querySelectorAll('.item-check').forEach(cb => cb.checked = selectAllBox.checked);
-    updateTotal();
+  document.querySelectorAll('.item-check').forEach(cb => cb.checked = selectAllBox.checked);
+  updateTotal();
 }
+
+window.onload = updateTotal;
 </script>
+
 <%@ include file="footer.jsp"%>

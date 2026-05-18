@@ -24,49 +24,43 @@ public class ProductDAO {
 		}
 	}
 
-	// 1. 전체 상품 조회 (리뷰 개수 및 평점 포함)
-	public List<ProductDTO> getAllProducts() {
+	// 1. 검색 + 카테고리 + 정렬 통합 조회 (리뷰 개수 및 평점 포함)
+	public List<ProductDTO> getProductList(String keyword, String category, String sort) {
 		List<ProductDTO> list = new ArrayList<>();
-		// PostgreSQL에서도 서브쿼리 방식은 동일하게 작동합니다.
-		String sql = "SELECT p.*, " + " (SELECT COUNT(*) FROM market_reviews r WHERE r.p_id = p.p_id) as review_cnt, "
-				+ " (SELECT AVG(rating) FROM market_reviews r WHERE r.p_id = p.p_id) as avg_rate "
-				+ "FROM market_products p ORDER BY p.p_id DESC";
 
-		try {
-			conn = DBConnection.getConnection();
-			pstmt = conn.prepareStatement(sql);
-			rs = pstmt.executeQuery();
+		StringBuilder sql = new StringBuilder(
+			"SELECT p.*,"
+			+ " (SELECT COUNT(*) FROM market_reviews r WHERE r.p_id = p.p_id) as review_cnt,"
+			+ " (SELECT AVG(rating) FROM market_reviews r WHERE r.p_id = p.p_id) as avg_rate"
+			+ " FROM market_products p WHERE 1=1"
+		);
 
-			while (rs.next()) {
-				ProductDTO dto = new ProductDTO(rs.getInt("p_id"), rs.getString("p_name"), rs.getString("p_category"),
-						rs.getInt("p_price"), rs.getInt("p_stock"), rs.getString("p_img_url"),
-						rs.getString("p_link_url"));
-				dto.setReviewCount(rs.getInt("review_cnt"));
-				// 평점 소수점 첫째 자리 반올림
-				dto.setAvgRating(Math.round(rs.getDouble("avg_rate") * 10) / 10.0);
-				list.add(dto);
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			close();
+		if (category != null && !category.isEmpty()) {
+			sql.append(" AND p.p_category = ?");
 		}
-		return list;
-	}
+		if (keyword != null && !keyword.isEmpty()) {
+			sql.append(" AND p.p_name LIKE ?");
+		}
 
-	// 2. 카테고리별 조회
-	public List<ProductDTO> getProductsByCategory(String category) {
-		List<ProductDTO> list = new ArrayList<>();
-		String sql = "SELECT p.*, " + " (SELECT COUNT(*) FROM market_reviews r WHERE r.p_id = p.p_id) as review_cnt, "
-				+ " (SELECT AVG(rating) FROM market_reviews r WHERE r.p_id = p.p_id) as avg_rate "
-				+ "FROM market_products p WHERE p.p_category = ? ORDER BY p.p_id DESC";
+		switch (sort == null ? "" : sort) {
+			case "price_asc":  sql.append(" ORDER BY p.p_price ASC");  break;
+			case "price_desc": sql.append(" ORDER BY p.p_price DESC"); break;
+			default:           sql.append(" ORDER BY p.p_id DESC");    break;
+		}
 
 		try {
 			conn = DBConnection.getConnection();
-			pstmt = conn.prepareStatement(sql);
-			pstmt.setString(1, category);
-			rs = pstmt.executeQuery();
+			pstmt = conn.prepareStatement(sql.toString());
 
+			int idx = 1;
+			if (category != null && !category.isEmpty()) {
+				pstmt.setString(idx++, category);
+			}
+			if (keyword != null && !keyword.isEmpty()) {
+				pstmt.setString(idx++, "%" + keyword + "%");
+			}
+
+			rs = pstmt.executeQuery();
 			while (rs.next()) {
 				ProductDTO dto = new ProductDTO(rs.getInt("p_id"), rs.getString("p_name"), rs.getString("p_category"),
 						rs.getInt("p_price"), rs.getInt("p_stock"), rs.getString("p_img_url"),

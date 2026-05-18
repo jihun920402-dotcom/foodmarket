@@ -2,71 +2,65 @@
 	pageEncoding="UTF-8"%>
 <%@ include file="header.jsp"%>
 
-<div class="container" style="max-width: 800px; margin: 40px auto;">
-	<div
-		style="background: white; padding: 40px; border-radius: 15px; border: 1px solid #e1e8ed; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);">
-		<h2 style="color: #0d6efd; margin-top: 0;">🌊 신규 상품 등록</h2>
-		<hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+<main class="max-w-7xl mx-auto px-4 sm:px-6 py-10">
+  <div class="max-w-xl mx-auto">
+    <div class="mb-8">
+      <h1 class="text-2xl font-bold text-[#f0ede8] tracking-tight">신규 상품 등록</h1>
+      <p class="text-sm text-[#8a8790] mt-1">새로운 상품 정보를 입력하세요</p>
+    </div>
 
-		<%-- action="insert"는 서블릿 매핑 주소입니다 --%>
-		<form action="insert" method="post" enctype="multipart/form-data">
-			<div style="margin-bottom: 15px;">
-				<label
-					style="display: block; margin-bottom: 5px; font-weight: bold;">카테고리</label>
-				<select name="p_category" class="form-select" style="padding: 10px;">
-					<option value="해산물">해산물</option>
-					<option value="육류">육류</option>
-					<option value="선물류">선물류</option>
-				</select>
-			</div>
+    <div class="bg-[#18181c] border border-[rgba(255,255,255,0.07)] rounded-2xl p-8">
+      <form action="insert" method="post" enctype="multipart/form-data" class="space-y-5">
 
-			<div style="margin-bottom: 15px;">
-				<label
-					style="display: block; margin-bottom: 5px; font-weight: bold;">상품명</label>
-				<input type="text" name="p_name" class="form-control" required
-					style="padding: 10px;">
-			</div>
+        <div>
+          <label class="block text-xs font-medium tracking-[0.08em] uppercase text-[#8a8790] mb-2">카테고리</label>
+          <select name="p_category" style="width:100%;">
+            <option value="해산물">해산물</option>
+            <option value="육류">육류</option>
+            <option value="선물류">선물류</option>
+          </select>
+        </div>
 
-			<div style="margin-bottom: 15px;">
-				<label
-					style="display: block; margin-bottom: 5px; font-weight: bold;">상품
-					이미지 선택</label> 
-				<%-- name값이 서블릿의 getPart()와 일치해야 합니다 --%>
-				<input type="file" name="p_img_file" class="form-control"
-					required style="padding: 10px;">
-			</div>
+        <div>
+          <label class="block text-xs font-medium tracking-[0.08em] uppercase text-[#8a8790] mb-2">상품명</label>
+          <input type="text" name="p_name" required style="width:100%;">
+        </div>
 
-			<div style="margin-bottom: 15px;">
-				<label
-					style="display: block; margin-bottom: 5px; font-weight: bold;">네이버
-					쇼핑 링크</label> <input type="url" name="p_link_url" class="form-control"
-					placeholder="https://..." style="padding: 10px;">
-			</div>
+        <div>
+          <label class="block text-xs font-medium tracking-[0.08em] uppercase text-[#8a8790] mb-2">상품 이미지</label>
+          <input type="file" name="p_img_file" required style="width:100%;">
+        </div>
 
-			<div class="row">
-				<div class="col-6 mb-3">
-					<label
-						style="display: block; margin-bottom: 5px; font-weight: bold;">가격
-						(원)</label> <input type="number" name="p_price" class="form-control"
-						required style="padding: 10px;">
-				</div>
-				<div class="col-6 mb-3">
-					<label
-						style="display: block; margin-bottom: 5px; font-weight: bold;">초기
-						재고량</label> <input type="number" name="p_stock" value="10"
-						class="form-control" style="padding: 10px;">
-				</div>
-			</div>
+        <div>
+          <label class="block text-xs font-medium tracking-[0.08em] uppercase text-[#8a8790] mb-2">참조 링크 (선택)</label>
+          <input type="url" name="p_link_url" placeholder="https://..." style="width:100%;">
+        </div>
 
-			<div class="mt-4 d-flex gap-2">
-				<%-- 해결: type="submit"을 명시하여 클릭 시 데이터가 전송되도록 수정 --%>
-				<button type="submit" class="btn btn-primary btn-lg fw-bold"
-					style="flex: 2; padding: 15px;">상품 등록 완료</button>
-				<a href="list" class="btn btn-outline-secondary btn-lg"
-					style="flex: 1; padding: 15px; text-decoration: none; text-align: center;">취소</a>
-			</div>
-		</form>
-	</div>
-</div>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-medium tracking-[0.08em] uppercase text-[#8a8790] mb-2">가격 (원)</label>
+            <input type="number" name="p_price" required style="width:100%;">
+          </div>
+          <div>
+            <label class="block text-xs font-medium tracking-[0.08em] uppercase text-[#8a8790] mb-2">수량</label>
+            <input type="number" name="p_stock" value="1" style="width:100%;">
+          </div>
+        </div>
+
+        <div class="flex gap-3 pt-2">
+          <a href="list"
+             class="flex-none flex items-center justify-center px-6 py-3.5 rounded-xl border border-[rgba(255,255,255,0.07)] text-sm text-[#8a8790] hover:text-[#f0ede8] hover:border-[rgba(255,255,255,0.15)] transition-all">
+            취소
+          </a>
+          <button type="submit"
+                  class="flex-1 py-3.5 rounded-xl bg-[#c8a96e] text-[#0a0a0b] text-sm font-bold hover:bg-[#d4b87e] transition-colors"
+                  style="border:none; cursor:pointer;">
+            상품 등록 완료
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</main>
 
 <%@ include file="footer.jsp"%>

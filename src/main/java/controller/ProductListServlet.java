@@ -1,6 +1,7 @@
 package controller;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -10,9 +11,6 @@ import javax.servlet.http.HttpServletResponse;
 import model.ProductDAO;
 import model.ProductDTO;
 
-/**
- * [ProductListServlet] 역할: 전체 상품 목록 조회 및 카테고리별 필터링 조회 매핑 주소: /list
- */
 @WebServlet("/list")
 public class ProductListServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
@@ -20,35 +18,29 @@ public class ProductListServlet extends HttpServlet {
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 
-		// 1. 파라미터 수집 (카테고리 필터링용)
+		request.setCharacterEncoding("UTF-8");
+
+		String keyword  = request.getParameter("keyword");
 		String category = request.getParameter("category");
+		String sort     = request.getParameter("sort");
 
-		// 2. 비즈니스 로직 수행 (DAO 호출)
-		ProductDAO dao = new ProductDAO();
-		List<ProductDTO> list = null;
+		if (keyword  == null) keyword  = "";
+		if (category == null) category = "";
+		if (sort     == null) sort     = "latest";
 
+		List<ProductDTO> list = new ArrayList<>();
 		try {
-			if (category != null && !category.isEmpty()) {
-				// 카테고리가 선택된 경우 해당 카테고리 상품만 가져옴
-				list = dao.getProductsByCategory(category);
-			} else {
-				// 카테고리가 없으면 전체 상품 조회
-				list = dao.getAllProducts();
-			}
+			ProductDAO dao = new ProductDAO();
+			list = dao.getProductList(keyword, category, sort);
 		} catch (Exception e) {
 			e.printStackTrace();
-			System.out.println("상품 목록 로드 중 오류 발생");
 		}
 
-		// 3. 결과 저장 (JSP에서 사용할 이름 "products")
-		// 만약 list가 null이면 빈 리스트를 보내서 JSP 에러 방지
-		if (list == null) {
-			list = new java.util.ArrayList<>();
-		}
 		request.setAttribute("products", list);
+		request.setAttribute("keyword",  keyword);
+		request.setAttribute("category", category);
+		request.setAttribute("sort",     sort);
 
-		// 4. View(JSP)로 포워딩
-		// 경로가 실제 WebContent(또는 webapp) 폴더 내의 파일명과 일치해야 함
 		request.getRequestDispatcher("/productList.jsp").forward(request, response);
 	}
 

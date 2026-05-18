@@ -9,6 +9,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import model.MemberDAO;
 import model.MemberDTO;
+import common.PasswordUtil;
 
 @WebServlet("/updateMember")
 public class UpdateMemberServlet extends HttpServlet {
@@ -31,13 +32,13 @@ public class UpdateMemberServlet extends HttpServlet {
 			return;
 		}
 
-		String password = request.getParameter("password");
+		String rawPassword = request.getParameter("password");
 		String name = request.getParameter("name");
 		String phone = request.getParameter("phone");
 		String address = request.getParameter("address");
 		String accountNumber = request.getParameter("accountNumber");
 
-		if (password == null || password.trim().isEmpty() || name == null || name.trim().isEmpty()) {
+		if (rawPassword == null || rawPassword.trim().isEmpty() || name == null || name.trim().isEmpty()) {
 			response.setContentType("text/html; charset=UTF-8");
 			response.getWriter().write("<script>alert('비밀번호와 이름은 필수입니다.'); history.back();</script>");
 			return;
@@ -45,7 +46,7 @@ public class UpdateMemberServlet extends HttpServlet {
 
 		MemberDTO updateDto = new MemberDTO();
 		updateDto.setUserid(loginUser.getUserid());
-		updateDto.setPassword(password.trim());
+		updateDto.setPassword(PasswordUtil.hash(rawPassword.trim()));
 		updateDto.setName(name.trim());
 		updateDto.setPhone(phone != null ? phone.trim() : "");
 		updateDto.setAddress(address != null ? address.trim() : "");

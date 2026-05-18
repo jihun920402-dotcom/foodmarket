@@ -3,25 +3,12 @@ package model;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import common.DBConnection;
 
 public class MemberDAO {
 	private Connection conn;
 	private PreparedStatement pstmt;
 	private ResultSet rs;
-
-	// [수정] PostgreSQL 드라이버 및 Render DB 주소 확정
-	private void getConnection() {
-		try {
-			Class.forName("org.postgresql.Driver");
-			String url = "jdbc:postgresql://dpg-d70fdteuk2gs7399g6m0-a.singapore-postgres.render.com:5432/shop_vm5g";
-			String user = "admin";
-			String pass = "RrwxAEPyRAWP9FLgGYqSMl8lM6vEQ0Wh";
-
-			conn = DriverManager.getConnection(url, user, pass);
-		} catch (Exception e) {
-			System.out.println("DB 연결 실패 (PostgreSQL): " + e.getMessage());
-		}
-	}
 
 	private void close() {
 		try {
@@ -38,7 +25,7 @@ public class MemberDAO {
 
 	// 1. 로그인 체크
 	public MemberDTO loginCheck(String userid, String password) {
-		getConnection();
+		conn = DBConnection.getConnection();
 		MemberDTO dto = null;
 		String sql = "SELECT * FROM market_members WHERE userid = ? AND password = ?";
 		try {
@@ -68,7 +55,7 @@ public class MemberDAO {
 
 	// 2. 회원가입 (INSERT)
 	public int insertMember(MemberDTO dto) {
-		getConnection();
+		conn = DBConnection.getConnection();
 		int result = 0;
 		String sql = "INSERT INTO market_members (userid, password, name, age, phone, address, account_number, role, mileage) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 		try {
@@ -93,7 +80,7 @@ public class MemberDAO {
 
 	// 3. 내 정보 수정
 	public int updateMember(MemberDTO dto) {
-		getConnection();
+		conn = DBConnection.getConnection();
 		int result = 0;
 		String sql = "UPDATE market_members SET password=?, name=?, phone=?, address=?, account_number=? WHERE userid=?";
 		try {
@@ -113,9 +100,9 @@ public class MemberDAO {
 		return result;
 	}
 
-	// 4. 마일리지 직접 수정 (승인 시 등)
+	// 4. 마일리지 직접 수정
 	public int updateMileage(String userid, int mileage) {
-		getConnection();
+		conn = DBConnection.getConnection();
 		int result = 0;
 		String sql = "UPDATE market_members SET mileage=? WHERE userid=?";
 		try {
@@ -133,7 +120,7 @@ public class MemberDAO {
 
 	// 5. 아이디로 회원 정보 조회
 	public MemberDTO getMemberByUserid(String userid) {
-		getConnection();
+		conn = DBConnection.getConnection();
 		MemberDTO dto = null;
 		String sql = "SELECT * FROM market_members WHERE userid = ?";
 		try {
@@ -163,7 +150,7 @@ public class MemberDAO {
 	// 6. [관리자] 전체 회원 목록 조회
 	public List<MemberDTO> getAllMembers() {
 		List<MemberDTO> list = new ArrayList<>();
-		getConnection();
+		conn = DBConnection.getConnection();
 		String sql = "SELECT * FROM market_members ORDER BY role ASC, name ASC";
 		try {
 			pstmt = conn.prepareStatement(sql);
@@ -190,12 +177,11 @@ public class MemberDAO {
 
 	// 7. [관리자] 회원 탈퇴 (트랜잭션 적용)
 	public int deleteMember(String userid) {
-		getConnection();
+		conn = DBConnection.getConnection();
 		int result = 0;
 		try {
-			conn.setAutoCommit(false); // 트랜잭션 시작
+			conn.setAutoCommit(false);
 
-			// 자식 테이블 데이터 먼저 삭제 (에러 방지)
 			String sql1 = "DELETE FROM market_cart WHERE userid = ?";
 			pstmt = conn.prepareStatement(sql1);
 			pstmt.setString(1, userid);
@@ -211,13 +197,12 @@ public class MemberDAO {
 			pstmt.setString(1, userid);
 			pstmt.executeUpdate();
 
-			// 메인 회원 테이블 삭제
 			String sql4 = "DELETE FROM market_members WHERE userid = ?";
 			pstmt = conn.prepareStatement(sql4);
 			pstmt.setString(1, userid);
 			result = pstmt.executeUpdate();
 
-			conn.commit(); // 성공 시 커밋
+			conn.commit();
 		} catch (Exception e) {
 			try {
 				if (conn != null)
@@ -233,9 +218,8 @@ public class MemberDAO {
 
 	// 8. [관리자] 회원 정보 수정
 	public int updateMemberByAdmin(MemberDTO dto) {
-		getConnection();
+		conn = DBConnection.getConnection();
 		int result = 0;
-		// [수정] 소문자 market_members로 통일 (PostgreSQL 권장)
 		String sql = "UPDATE market_members SET name=?, phone=?, address=?, mileage=?, role=? WHERE userid=?";
 		try {
 			pstmt = conn.prepareStatement(sql);
@@ -256,7 +240,7 @@ public class MemberDAO {
 
 	// 9. 아이디 중복 체크
 	public boolean checkId(String userid) {
-		getConnection();
+		conn = DBConnection.getConnection();
 		boolean result = false;
 		String sql = "SELECT userid FROM market_members WHERE userid = ?";
 		try {

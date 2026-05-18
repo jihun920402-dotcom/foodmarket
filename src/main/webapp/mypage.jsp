@@ -6,8 +6,8 @@
 
 <%
 if (loginUser == null) {
-	response.sendRedirect("login.jsp");
-	return;
+    response.sendRedirect("login.jsp");
+    return;
 }
 
 boolean isAdmin = "admin".equals(userRole);
@@ -19,287 +19,206 @@ String account = (mInfo != null) ? mInfo.getAccountNumber() : "1002-123-456789";
 String holder = (mInfo != null) ? mInfo.getAccountHolder() : "종합마켓";
 %>
 
-<style>
-/* 마이페이지 전용 스타일 보완 */
-.info-card {
-	border-radius: 20px !important;
-	overflow: hidden;
-}
+<main class="max-w-7xl mx-auto px-4 sm:px-6 py-10">
+  <div class="max-w-2xl mx-auto">
 
-/* 버튼 간격 및 정렬 최적화 */
-.mypage-btn-group {
-	display: flex;
-	flex-direction: column;
-	gap: 12px; /* 버튼 사이 간격 확보 */
-	margin-top: 15px;
-}
+    <!-- 알림 메시지 -->
+    <% if ("1".equals(request.getParameter("success"))) { %>
+    <div class="mb-6 px-5 py-4 rounded-xl bg-[rgba(133,192,64,0.1)] border border-[rgba(133,192,64,0.25)] text-sm text-[#85c040]">
+      신청 완료! 입금 확인 신청이 접수되었습니다. 관리자 승인 후 충전됩니다.
+    </div>
+    <% } %>
+    <% if ("1".equals(request.getParameter("updateSuccess"))) { %>
+    <div class="mb-6 px-5 py-4 rounded-xl bg-[rgba(200,169,110,0.1)] border border-[rgba(200,169,110,0.25)] text-sm text-[#c8a96e]">
+      회원 정보가 성공적으로 수정되었습니다.
+    </div>
+    <% } %>
 
-.bottom-action-group {
-	display: flex;
-	flex-direction: column;
-	gap: 10px; /* 하단 버튼 사이 간격 */
-	margin-top: 30px;
-}
+    <!-- 프로필 카드 -->
+    <div class="bg-[#18181c] border border-[rgba(255,255,255,0.07)] rounded-2xl overflow-hidden mb-6">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-[rgba(255,255,255,0.07)]">
+        <h2 class="text-base font-bold text-[#f0ede8]">내 정보 관리</h2>
+        <a href="list" class="text-xs text-[#8a8790] hover:text-[#f0ede8] transition-colors">쇼핑 계속하기</a>
+      </div>
 
-/* 모바일 대응 */
-@media ( max-width : 768px) {
-	.display-6 {
-		font-size: 2rem !important;
-	}
-	.col-md-4 {
-		border-right: none !important;
-		border-bottom: 1px solid #eee;
-		padding-bottom: 20px;
-		margin-bottom: 20px;
-	}
-	.ps-md-4 {
-		padding-left: 0 !important;
-		text-align: center;
-	}
-	.table th {
-		width: 40% !important;
-		font-size: 13px;
-	}
-	.table td {
-		font-size: 13px;
-	}
-}
-</style>
+      <div class="p-6">
+        <div class="flex flex-col md:flex-row gap-8 items-start">
+          <!-- 아바타 + 역할 -->
+          <div class="flex flex-col items-center gap-3 md:w-40 shrink-0">
+            <div class="w-20 h-20 rounded-full bg-[#1a1a20] border border-[rgba(255,255,255,0.07)] flex items-center justify-center">
+              <span class="text-3xl">👤</span>
+            </div>
+            <div class="text-center">
+              <p class="text-base font-bold text-[#f0ede8]"><%= loginUser.getName() %>님</p>
+              <span class="inline-block mt-1 px-3 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase bg-[rgba(200,169,110,0.12)] text-[#c8a96e] border border-[rgba(200,169,110,0.25)]">
+                <%= loginUser.getRole().toUpperCase() %>
+              </span>
+            </div>
+          </div>
 
-<div class="container mt-5 mb-5">
-	<div class="row justify-content-center">
-		<div class="col-md-8">
-			<%
-			if ("1".equals(request.getParameter("success"))) {
-			%>
-			<div
-				class="alert alert-success alert-dismissible fade show border-0 shadow-sm"
-				role="alert">
-				<strong>신청 완료!</strong> 입금 확인 신청이 접수되었습니다. 관리자 승인 후 충전됩니다.
-				<button type="button" class="btn-close" data-bs-dismiss="alert"
-					aria-label="Close"></button>
-			</div>
-			<%
-			}
-			%>
+          <!-- 마일리지 + 버튼 -->
+          <div class="flex-1">
+            <div class="bg-gradient-to-br from-[#18161a] to-[#201d25] border border-[rgba(200,169,110,0.25)] rounded-xl p-5 mb-4">
+              <p class="text-[10px] font-medium tracking-[0.12em] uppercase text-[#4a4850] mb-2">보유 마일리지</p>
+              <p class="text-3xl font-bold text-[#c8a96e] tracking-tight">
+                <%= String.format("%,d", loginUser.getMileage()) %>
+                <span class="text-sm font-normal text-[#8a8790] ml-1">M</span>
+              </p>
+            </div>
 
-			<%
-			if ("1".equals(request.getParameter("updateSuccess"))) {
-			%>
-			<div
-				class="alert alert-info alert-dismissible fade show border-0 shadow-sm"
-				role="alert">
-				회원 정보가 성공적으로 수정되었습니다.
-				<button type="button" class="btn-close" data-bs-dismiss="alert"
-					aria-label="Close"></button>
-			</div>
-			<%
-			}
-			%>
+            <% if (!isAdmin) { %>
+            <div class="grid grid-cols-2 gap-3">
+              <button onclick="openModal('chargeModal')"
+                      class="py-3 rounded-xl bg-[#c8a96e] text-[#0a0a0b] text-sm font-bold hover:bg-[#d4b87e] transition-colors"
+                      style="border:none; cursor:pointer;">
+                마일리지 충전
+              </button>
+              <a href="chargeList.jsp"
+                 class="flex items-center justify-center py-3 rounded-xl border border-[rgba(200,169,110,0.35)] text-[#c8a96e] text-sm hover:bg-[rgba(200,169,110,0.1)] transition-all">
+                충전 내역
+              </a>
+            </div>
+            <% } %>
+          </div>
+        </div>
 
-			<div class="card shadow-sm border-0 info-card">
-				<div
-					class="card-header bg-white py-3 d-flex justify-content-between align-items-center border-bottom">
-					<h4 class="mb-0 fw-bold">👤 내 정보 관리</h4>
-					<a href="list"
-						class="btn btn-outline-secondary btn-sm rounded-pill">쇼핑 계속하기</a>
-				</div>
+        <div class="border-t border-[rgba(255,255,255,0.07)] mt-6 pt-6">
+          <p class="text-[10px] font-medium tracking-[0.12em] uppercase text-[#4a4850] mb-4">배송 및 계좌 정보</p>
+          <div class="space-y-3">
+            <div class="flex items-start justify-between py-2 border-b border-[rgba(255,255,255,0.05)]">
+              <span class="text-xs text-[#8a8790] w-28 shrink-0">전화번호</span>
+              <span class="text-sm text-[#f0ede8] text-right"><%= (loginUser.getPhone() != null) ? loginUser.getPhone() : "미등록" %></span>
+            </div>
+            <div class="flex items-start justify-between py-2 border-b border-[rgba(255,255,255,0.05)]">
+              <span class="text-xs text-[#8a8790] w-28 shrink-0">배송지 주소</span>
+              <span class="text-sm text-[#f0ede8] text-right"><%= (loginUser.getAddress() != null) ? loginUser.getAddress() : "미등록" %></span>
+            </div>
+            <div class="flex items-start justify-between py-2">
+              <span class="text-xs text-[#8a8790] w-28 shrink-0">환불 계좌</span>
+              <span class="text-sm text-[#f0ede8] text-right"><%= (loginUser.getAccountNumber() != null) ? loginUser.getAccountNumber() : "미등록" %></span>
+            </div>
+          </div>
+        </div>
 
-				<div class="card-body p-4 p-md-5">
-					<div class="row mb-4 align-items-center">
-						<div class="col-md-4 text-center border-end">
-							<div
-								class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center mb-3 shadow-sm"
-								style="width: 100px; height: 100px;">
-								<span style="font-size: 40px;">👤</span>
-							</div>
-							<h5 class="fw-bold mb-1"><%=loginUser.getName()%>님
-							</h5>
-							<span class="badge bg-primary rounded-pill px-3"><%=loginUser.getRole().toUpperCase()%></span>
-						</div>
+        <div class="flex flex-col sm:flex-row gap-3 mt-6">
+          <% if (!isAdmin) { %>
+          <a href="orderList"
+             class="flex-1 flex items-center justify-center py-3 rounded-xl border border-[rgba(200,169,110,0.25)] text-[#c8a96e] text-sm hover:bg-[rgba(200,169,110,0.1)] transition-all">
+            주문 기록 보기
+          </a>
+          <% } %>
+          <button onclick="openModal('editProfileModal')"
+                  class="flex-1 py-3 rounded-xl border border-[rgba(255,255,255,0.1)] text-[#f0ede8] text-sm hover:bg-[rgba(255,255,255,0.05)] transition-all"
+                  style="background:transparent; cursor:pointer;">
+            정보 수정하기
+          </button>
+        </div>
+      </div>
+    </div>
 
-						<div class="col-md-8 ps-md-4">
-							<h5 class="text-primary mb-2" style="font-size: 1.1rem;">나의
-								마일리지</h5>
-							<div class="display-6 fw-bold text-dark mb-3">
-								<%=String.format("%,d", loginUser.getMileage())%><small
-									style="font-size: 20px;">원</small>
-							</div>
+  </div>
+</main>
 
-							<div class="mypage-btn-group">
-								<%
-								if (!isAdmin) {
-								%>
-								<button type="button"
-									class="btn btn-primary btn-lg fw-bold shadow-sm py-3"
-									data-bs-toggle="modal" data-bs-target="#chargeModal">
-									마일리지 충전하기</button>
-								<a href="chargeList.jsp"
-									class="btn btn-outline-primary btn-lg fw-bold shadow-sm py-3">
-									마일리지 충전내역 </a>
-								<%
-								}
-								%>
-							</div>
-						</div>
-					</div>
-
-					<hr class="my-4 opacity-25">
-
-					<h5 class="mb-3 fw-bold">
-						<i class="bi bi-info-circle me-2"></i>상세 배송 및 계좌 정보
-					</h5>
-					<div class="table-responsive">
-						<table class="table align-middle border-top">
-							<tr>
-								<th class="table-light py-3" style="width: 30%;">전화번호</th>
-								<td class="py-3"><%=(loginUser.getPhone() != null) ? loginUser.getPhone() : "미등록"%></td>
-							</tr>
-							<tr>
-								<th class="table-light py-3">배송지 주소</th>
-								<td class="py-3"><%=(loginUser.getAddress() != null) ? loginUser.getAddress() : "미등록"%></td>
-							</tr>
-							<tr>
-								<th class="table-light py-3">나의 환불 계좌</th>
-								<td class="py-3"><%=(loginUser.getAccountNumber() != null) ? loginUser.getAccountNumber() : "미등록"%>
-									(본인)</td>
-							</tr>
-						</table>
-					</div>
-
-					<div class="bottom-action-group">
-						<%
-						if (!isAdmin) {
-						%>
-						<a href="orderList"
-							class="btn btn-info btn-lg px-4 text-white fw-bold shadow-sm py-3">
-							📦 주문 기록 보기 </a>
-						<%
-						}
-						%>
-						<button class="btn btn-warning btn-lg px-4 fw-bold shadow-sm py-3"
-							data-bs-toggle="modal" data-bs-target="#editProfileModal">
-							정보 수정하기</button>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
+<!-- 마일리지 충전 모달 -->
+<div id="chargeModal" class="hidden fixed inset-0 z-50 flex items-center justify-center px-4">
+  <div class="absolute inset-0 bg-black/70" onclick="closeModal('chargeModal')"></div>
+  <div class="relative w-full max-w-md bg-[#18181c] border border-[rgba(255,255,255,0.07)] rounded-2xl overflow-hidden z-10">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-[rgba(255,255,255,0.07)]">
+      <h3 class="text-base font-bold text-[#f0ede8]">마일리지 충전 신청</h3>
+      <button onclick="closeModal('chargeModal')" class="text-[#4a4850] hover:text-[#f0ede8] transition-colors" style="background:none; border:none; cursor:pointer; font-size:20px;">✕</button>
+    </div>
+    <div class="p-6">
+      <div class="bg-[rgba(200,169,110,0.08)] border border-[rgba(200,169,110,0.2)] rounded-xl p-4 mb-5 text-sm text-[#8a8790]">
+        <strong class="text-[#c8a96e]">[필독] 입금 안내</strong><br>
+        아래의 마켓 전용 계좌로 입금해 주셔야 확인 후 충전됩니다.
+      </div>
+      <div class="bg-[#141418] border border-[rgba(255,255,255,0.07)] rounded-xl p-6 text-center mb-5">
+        <p class="text-xs text-[#4a4850] mb-2">입금하실 계좌 (예금주: <%= holder %>)</p>
+        <p class="text-lg font-bold text-[#f0ede8]"><%= bank %></p>
+        <p class="text-2xl font-bold text-[#c8a96e] mt-1"><%= account %></p>
+        <p class="text-sm text-[#8a8790] mt-2">입금자명: <strong class="text-[#f0ede8]"><%= loginUser.getName() %></strong></p>
+      </div>
+      <div>
+        <label class="block text-xs font-medium tracking-[0.08em] uppercase text-[#8a8790] mb-2">충전 희망 금액 선택</label>
+        <select id="chargeAmount" style="width:100%;">
+          <option value="10000">10,000원</option>
+          <option value="50000">50,000원</option>
+          <option value="100000">100,000원</option>
+          <option value="300000">300,000원</option>
+          <option value="500000">500,000원</option>
+        </select>
+      </div>
+    </div>
+    <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-[rgba(255,255,255,0.07)]">
+      <button onclick="closeModal('chargeModal')"
+              class="px-4 py-2.5 text-sm text-[#8a8790] hover:text-[#f0ede8] transition-colors"
+              style="background:none; border:none; cursor:pointer;">취소</button>
+      <button onclick="requestCharge()"
+              class="px-6 py-2.5 rounded-lg bg-[#c8a96e] text-[#0a0a0b] text-sm font-bold hover:bg-[#d4b87e] transition-colors"
+              style="border:none; cursor:pointer;">
+        입금 완료 및 신청
+      </button>
+    </div>
+  </div>
 </div>
 
-<%-- 1. 마일리지 충전 모달 --%>
-<div class="modal fade" id="chargeModal" tabindex="-1"
-	aria-hidden="true">
-	<div class="modal-dialog modal-dialog-centered">
-		<div class="modal-content border-0 shadow-lg"
-			style="border-radius: 20px;">
-			<div class="modal-header bg-primary text-white border-0 py-3">
-				<h5 class="modal-title fw-bold">마일리지 충전 신청</h5>
-				<button type="button" class="btn-close btn-close-white"
-					data-bs-dismiss="modal"></button>
-			</div>
-			<div class="modal-body p-4">
-				<div class="alert alert-warning border-0 small">
-					<strong>[필독] 입금 안내</strong><br> 아래의 마켓 전용 계좌로 입금해 주셔야 확인 후
-					충전됩니다.
-				</div>
-				<div class="bg-light p-4 rounded-3 text-center my-4 border">
-					<p class="text-muted small mb-2">
-						입금하실 계좌 (예금주:
-						<%=holder%>)
-					</p>
-					<h4 class="fw-bold text-dark mb-0"><%=bank%></h4>
-					<h3 class="fw-bold text-primary"><%=account%></h3>
-					<p class="mb-0 mt-2 text-secondary">
-						입금자명: <strong><%=loginUser.getName()%></strong>
-					</p>
-				</div>
-				<div class="mb-2">
-					<label class="form-label fw-bold">충전 희망 금액 선택</label> <select
-						id="chargeAmount" class="form-select form-select-lg border-2">
-						<option value="10000">10,000원</option>
-						<option value="50000">50,000원</option>
-						<option value="100000">100,000원</option>
-						<option value="300000">300,000원</option>
-						<option value="500000">500,000원</option>
-					</select>
-				</div>
-			</div>
-			<div class="modal-footer bg-light border-0">
-				<button type="button"
-					class="btn btn-link text-muted text-decoration-none"
-					data-bs-dismiss="modal">취소</button>
-				<button type="button"
-					class="btn btn-primary px-4 fw-bold rounded-pill"
-					onclick="requestCharge()">입금 완료 및 신청</button>
-			</div>
-		</div>
-	</div>
-</div>
-
-<%-- 2. 내 정보 수정 모달 --%>
-<div class="modal fade" id="editProfileModal" tabindex="-1"
-	aria-hidden="true">
-	<div class="modal-dialog modal-dialog-centered">
-		<div class="modal-content border-0 shadow-lg"
-			style="border-radius: 20px;">
-			<div class="modal-header bg-warning border-0 py-3">
-				<h5 class="modal-title fw-bold">내 정보 수정</h5>
-				<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-			</div>
-			<form action="updateMember" method="post">
-				<div class="modal-body p-4">
-					<div class="mb-3">
-						<label class="form-label fw-bold">아이디 (변경불가)</label> <input
-							type="text" class="form-control bg-light"
-							value="<%=loginUser.getUserid()%>" readonly>
-					</div>
-					<div class="mb-3">
-						<label class="form-label fw-bold">비밀번호</label> <input
-							type="password" name="password" class="form-control border-2"
-							value="<%=loginUser.getPassword()%>" required>
-					</div>
-					<div class="mb-3">
-						<label class="form-label fw-bold">이름</label> <input type="text"
-							name="name" class="form-control border-2"
-							value="<%=loginUser.getName()%>" required>
-					</div>
-					<div class="mb-3">
-						<label class="form-label fw-bold">전화번호</label> <input type="text"
-							name="phone" class="form-control border-2"
-							value="<%=(loginUser.getPhone() != null) ? loginUser.getPhone() : ""%>">
-					</div>
-					<div class="mb-3">
-						<label class="form-label fw-bold">배송지 주소</label> <input
-							type="text" name="address" class="form-control border-2"
-							value="<%=(loginUser.getAddress() != null) ? loginUser.getAddress() : ""%>">
-					</div>
-					<div class="mb-3">
-						<label class="form-label fw-bold">환불 계좌번호</label> <input
-							type="text" name="accountNumber" class="form-control border-2"
-							value="<%=(loginUser.getAccountNumber() != null) ? loginUser.getAccountNumber() : ""%>">
-					</div>
-				</div>
-				<div class="modal-footer bg-light border-0">
-					<button type="button"
-						class="btn btn-link text-muted text-decoration-none"
-						data-bs-dismiss="modal">닫기</button>
-					<button type="submit"
-						class="btn btn-warning fw-bold px-4 rounded-pill">수정 완료</button>
-				</div>
-			</form>
-		</div>
-	</div>
+<!-- 정보 수정 모달 -->
+<div id="editProfileModal" class="hidden fixed inset-0 z-50 flex items-center justify-center px-4">
+  <div class="absolute inset-0 bg-black/70" onclick="closeModal('editProfileModal')"></div>
+  <div class="relative w-full max-w-md bg-[#18181c] border border-[rgba(255,255,255,0.07)] rounded-2xl overflow-hidden z-10">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-[rgba(255,255,255,0.07)]">
+      <h3 class="text-base font-bold text-[#f0ede8]">내 정보 수정</h3>
+      <button onclick="closeModal('editProfileModal')" class="text-[#4a4850] hover:text-[#f0ede8] transition-colors" style="background:none; border:none; cursor:pointer; font-size:20px;">✕</button>
+    </div>
+    <form action="updateMember" method="post">
+      <div class="p-6 space-y-4">
+        <div>
+          <label class="block text-xs font-medium tracking-[0.08em] uppercase text-[#8a8790] mb-2">아이디 (변경불가)</label>
+          <input type="text" value="<%= loginUser.getUserid() %>" readonly style="width:100%; opacity:0.5; cursor:not-allowed;">
+        </div>
+        <div>
+          <label class="block text-xs font-medium tracking-[0.08em] uppercase text-[#8a8790] mb-2">새 비밀번호</label>
+          <input type="password" name="password" placeholder="새 비밀번호를 입력하세요" required style="width:100%;">
+        </div>
+        <div>
+          <label class="block text-xs font-medium tracking-[0.08em] uppercase text-[#8a8790] mb-2">이름</label>
+          <input type="text" name="name" value="<%= loginUser.getName() %>" required style="width:100%;">
+        </div>
+        <div>
+          <label class="block text-xs font-medium tracking-[0.08em] uppercase text-[#8a8790] mb-2">전화번호</label>
+          <input type="text" name="phone" value="<%= (loginUser.getPhone() != null) ? loginUser.getPhone() : "" %>" style="width:100%;">
+        </div>
+        <div>
+          <label class="block text-xs font-medium tracking-[0.08em] uppercase text-[#8a8790] mb-2">배송지 주소</label>
+          <input type="text" name="address" value="<%= (loginUser.getAddress() != null) ? loginUser.getAddress() : "" %>" style="width:100%;">
+        </div>
+        <div>
+          <label class="block text-xs font-medium tracking-[0.08em] uppercase text-[#8a8790] mb-2">환불 계좌번호</label>
+          <input type="text" name="accountNumber" value="<%= (loginUser.getAccountNumber() != null) ? loginUser.getAccountNumber() : "" %>" style="width:100%;">
+        </div>
+      </div>
+      <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-[rgba(255,255,255,0.07)]">
+        <button type="button" onclick="closeModal('editProfileModal')"
+                class="px-4 py-2.5 text-sm text-[#8a8790] hover:text-[#f0ede8] transition-colors"
+                style="background:none; border:none; cursor:pointer;">닫기</button>
+        <button type="submit"
+                class="px-6 py-2.5 rounded-lg bg-[#c8a96e] text-[#0a0a0b] text-sm font-bold hover:bg-[#d4b87e] transition-colors"
+                style="border:none; cursor:pointer;">
+          수정 완료
+        </button>
+      </div>
+    </form>
+  </div>
 </div>
 
 <script>
-	function requestCharge() {
-		const amount = document.getElementById('chargeAmount').value;
-		const formattedAmount = parseInt(amount).toLocaleString();
-		if (confirm(formattedAmount + "원을 입금하셨습니까?\n확인을 누르면 신청이 완료됩니다.")) {
-			location.href = "requestCharge?amount=" + amount;
-		}
-	}
+function requestCharge() {
+  const amount = document.getElementById('chargeAmount').value;
+  const formatted = parseInt(amount).toLocaleString();
+  if (confirm(formatted + "원을 입금하셨습니까?\n확인을 누르면 신청이 완료됩니다.")) {
+    location.href = "requestCharge?amount=" + amount;
+  }
+}
 </script>
 
 <%@ include file="footer.jsp"%>

@@ -8,200 +8,78 @@
 MemberDTO currentUser = (MemberDTO) session.getAttribute("loginUser");
 
 if (currentUser == null) {
-	response.sendRedirect("login.jsp");
-	return;
+    response.sendRedirect("login.jsp");
+    return;
 }
 
 ChargeDAO dao = new ChargeDAO();
 List<ChargeDTO> list = dao.getChargeList(currentUser.getUserid());
 %>
 
-<style>
-.shop-container {
-	max-width: 1000px;
-	margin: 0 auto;
-	padding: 20px;
-}
+<main class="max-w-7xl mx-auto px-4 sm:px-6 py-10">
+  <div class="max-w-2xl mx-auto">
 
-.main-banner {
-	background: #e0f2fe;
-	padding: 40px;
-	text-align: center;
-	border-radius: 15px;
-	margin-bottom: 30px;
-	color: #0369a1;
-}
+    <!-- 마일리지 배너 -->
+    <div class="bg-gradient-to-br from-[#18161a] to-[#201d25] border border-[rgba(200,169,110,0.2)] rounded-2xl p-8 text-center mb-8">
+      <p class="text-[11px] font-medium tracking-[0.2em] uppercase text-[#c8a96e] mb-2">Mileage Center</p>
+      <h2 class="text-2xl font-bold text-[#f0ede8]">마일리지 충전 내역</h2>
+      <p class="text-sm text-[#8a8790] mt-1">안전하고 빠른 마일리지 충전 시스템</p>
+    </div>
 
-.banner-title {
-	font-size: 24px;
-	font-weight: bold;
-	margin-bottom: 10px;
-}
+    <div class="flex items-center justify-between mb-6">
+      <h3 class="text-base font-bold text-[#f0ede8]">충전 내역</h3>
+      <a href="chargeRequest.jsp"
+         class="px-4 py-2 rounded-lg text-sm bg-[#c8a96e] text-[#0a0a0b] font-semibold hover:bg-[#d4b87e] transition-colors">
+        + 충전 신청
+      </a>
+    </div>
 
-.content-header {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	margin-bottom: 25px;
-}
+    <div class="bg-[#18181c] border border-[rgba(255,255,255,0.07)] rounded-2xl overflow-hidden mb-8">
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm" style="min-width: 400px;">
+          <thead>
+            <tr class="border-b border-[rgba(255,255,255,0.07)]">
+              <th class="px-5 py-3.5 text-left text-[10px] font-medium tracking-[0.1em] uppercase text-[#8a8790]">신청 번호</th>
+              <th class="px-5 py-3.5 text-left text-[10px] font-medium tracking-[0.1em] uppercase text-[#8a8790]">신청 금액</th>
+              <th class="px-5 py-3.5 text-left text-[10px] font-medium tracking-[0.1em] uppercase text-[#8a8790]">신청 일시</th>
+              <th class="px-5 py-3.5 text-left text-[10px] font-medium tracking-[0.1em] uppercase text-[#8a8790]">처리 상태</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% if (list != null && !list.isEmpty()) {
+                 for (ChargeDTO c : list) { %>
+            <tr class="border-b border-[rgba(255,255,255,0.05)] hover:bg-[rgba(255,255,255,0.02)] transition-colors">
+              <td class="px-5 py-4 font-mono text-xs text-[#8a8790]">#<%= c.getRequestId() %></td>
+              <td class="px-5 py-4 text-base font-bold text-[#f0ede8]"><%= String.format("%,d", c.getAmount()) %>원</td>
+              <td class="px-5 py-4 text-xs text-[#8a8790]"><%= c.getRequestDate() %></td>
+              <td class="px-5 py-4">
+                <% if ("pending".equalsIgnoreCase(c.getStatus())) { %>
+                <span class="px-2.5 py-1 rounded text-[10px] font-bold tracking-wider uppercase bg-[rgba(200,169,110,0.12)] text-[#c8a96e] border border-[rgba(200,169,110,0.25)]">승인 대기</span>
+                <% } else if ("success".equalsIgnoreCase(c.getStatus())) { %>
+                <span class="px-2.5 py-1 rounded text-[10px] font-bold tracking-wider uppercase bg-[rgba(133,192,64,0.12)] text-[#85c040] border border-[rgba(133,192,64,0.25)]">충전 완료</span>
+                <% } else { %>
+                <span class="px-2.5 py-1 rounded text-[10px] font-bold tracking-wider uppercase bg-[rgba(255,255,255,0.05)] text-[#8a8790] border border-[rgba(255,255,255,0.07)]"><%= c.getStatus() %></span>
+                <% } %>
+              </td>
+            </tr>
+            <% } } else { %>
+            <tr>
+              <td colspan="4" class="text-center py-16 text-[#4a4850]">충전 신청 내역이 존재하지 않습니다.</td>
+            </tr>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+    </div>
 
-.charge-card {
-	background: #fff;
-	border-radius: 15px;
-	box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-	border: 1px solid #eef2f6;
-	overflow: hidden;
-}
+    <div class="flex justify-center">
+      <a href="mypage.jsp"
+         class="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg border border-[rgba(255,255,255,0.07)] text-sm text-[#8a8790] hover:text-[#f0ede8] hover:border-[rgba(255,255,255,0.15)] transition-all">
+        ← 마이페이지로
+      </a>
+    </div>
 
-.table {
-	margin-bottom: 0;
-	vertical-align: middle;
-}
-
-.table thead th {
-	background: #f8fafc;
-	color: #64748b;
-	font-weight: 600;
-	padding: 15px;
-	border-bottom: 1px solid #f1f5f9;
-}
-
-.table tbody td {
-	padding: 18px 15px;
-	color: #334155;
-	border-bottom: 1px solid #f1f5f9;
-}
-
-.status-badge {
-	padding: 6px 14px;
-	border-radius: 20px;
-	font-size: 12px;
-	font-weight: bold;
-}
-
-.status-pending {
-	background: #fef3c7;
-	color: #92400e;
-}
-
-.status-success {
-	background: #dcfce7;
-	color: #166534;
-}
-
-.btn-charge {
-	background: #3b82f6;
-	color: white;
-	padding: 10px 25px;
-	border-radius: 8px;
-	text-decoration: none;
-	font-weight: bold;
-}
-
-.amount-text {
-	font-size: 16px;
-	font-weight: 800;
-	color: #1e293b;
-}
-
-/* ⭐ 하단 버튼 영역 추가 스타일 */
-.action-area {
-	margin-top: 30px;
-	display: flex;
-	justify-content: center;
-}
-
-.btn-list-back {
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	width: 180px;
-	height: 50px;
-	background: white;
-	color: #64748b;
-	border: 1px solid #e2e8f0;
-	border-radius: 10px;
-	text-decoration: none;
-	font-weight: 600;
-	transition: 0.3s;
-}
-
-.btn-list-back:hover {
-	background: #f8fafc;
-	color: #1e293b;
-	border-color: #cbd5e1;
-	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-}
-</style>
-
-<div class="shop-container">
-	<div class="main-banner">
-		<div class="banner-title">💰 MILEAGE CENTER</div>
-		<div style="font-size: 16px; opacity: 0.8;">안전하고 빠른 마일리지 충전 시스템</div>
-	</div>
-
-	<div class="content-header">
-		<h2 style="font-weight: 800; color: #334155;">마일리지 충전 내역</h2>
-		<a href="chargeRequest.jsp" class="btn-charge">+ 충전 신청하기</a>
-	</div>
-
-	<div class="charge-card">
-		<div class="table-responsive">
-			<table class="table text-center">
-				<thead>
-					<tr>
-						<th>신청 번호</th>
-						<th>신청 금액</th>
-						<th>신청 일시</th>
-						<th>처리 상태</th>
-					</tr>
-				</thead>
-				<tbody>
-					<%
-					if (list != null && !list.isEmpty()) {
-						for (ChargeDTO c : list) {
-					%>
-					<tr>
-						<td style="color: #94a3b8; font-weight: bold;">#<%=c.getRequestId()%></td>
-						<td class="amount-text"><%=String.format("%,d", c.getAmount())%>원</td>
-						<td style="color: #64748b; font-size: 14px;"><%=c.getRequestDate()%></td>
-						<td>
-							<%
-							if ("pending".equalsIgnoreCase(c.getStatus())) {
-							%> <span
-							class="status-badge status-pending">승인 대기</span> <%
- } else if ("success".equalsIgnoreCase(c.getStatus())) {
- %>
-							<span class="status-badge status-success">충전 완료</span> <%
- } else {
- %>
-							<span class="status-badge bg-light text-muted"><%=c.getStatus()%></span>
-							<%
-							}
-							%>
-						</td>
-					</tr>
-					<%
-					}
-					} else {
-					%>
-					<tr>
-						<td colspan="4" style="padding: 100px; color: #94a3b8;">충전 신청
-							내역이 존재하지 않습니다.</td>
-					</tr>
-					<%
-					}
-					%>
-				</tbody>
-			</table>
-		</div>
-	</div>
-
-	<div class="action-area">
-		<a href="mypage.jsp" class="btn-list-back"> <i
-			class="bi bi-arrow-left me-2"></i> 마이페이지로
-		</a>
-	</div>
-</div>
+  </div>
+</main>
 
 <%@ include file="footer.jsp"%>

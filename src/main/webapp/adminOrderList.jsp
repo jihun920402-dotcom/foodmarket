@@ -2,159 +2,86 @@
 	pageEncoding="UTF-8"%>
 <%@ page import="model.OrderDAO, model.OrderDTO, java.util.List"%>
 <%@ page import="model.MemberDTO"%>
-
-<%-- 1. 헤더 포함 (loginUser 체크는 헤더 내부 로직과 맞춤) --%>
 <%@ include file="header.jsp"%>
 
 <%
-    // 관리자 권한 체크 (userRole은 header.jsp에서 이미 선언됨)
-    if (!"admin".equals(userRole)) {
-        out.println("<script>alert('관리자만 접근 가능합니다.'); location.href='list';</script>");
-        return;
-    }
+if (!"admin".equals(userRole)) {
+    out.println("<script>alert('관리자만 접근 가능합니다.'); location.href='list';</script>");
+    return;
+}
 
-    // 주문 목록 가져오기
-    OrderDAO dao = new OrderDAO();
-    List<OrderDTO> list = dao.getAllOrders();
+OrderDAO dao = new OrderDAO();
+List<OrderDTO> list = dao.getAllOrders();
 %>
 
-<style>
-/* 기존 컨셉 유지하며 디테일 보완 */
-.table-container {
-	background: white;
-	border-radius: 15px;
-	padding: 20px; /* 모바일 대응 위해 패딩 살짝 축소 */
-	margin-top: 30px;
-	margin-bottom: 50px;
-}
+<main class="max-w-7xl mx-auto px-4 sm:px-6 py-10">
+  <div class="mb-8 flex items-center justify-between">
+    <div>
+      <h1 class="text-2xl font-bold text-[#f0ede8] tracking-tight">전체 주문 관리</h1>
+      <p class="text-sm text-[#8a8790] mt-1">총 <span class="text-[#c8a96e] font-semibold"><%= list != null ? list.size() : 0 %></span>건</p>
+    </div>
+  </div>
 
-.status-badge {
-	padding: 6px 12px;
-	border-radius: 20px;
-	font-size: 0.8rem;
-	font-weight: bold;
-	display: inline-block;
-	white-space: nowrap;
-}
-
-/* 상태별 색상 (사장님 기존 색상 유지 및 가독성 업) */
-.status-paid {
-	background-color: #e3f2fd;
-	color: #0d47a1;
-} /* 결제완료 */
-.status-ready {
-	background-color: #fff3e0;
-	color: #e65100;
-} /* 배송준비 */
-.status-shipping {
-	background-color: #f1f8e9;
-	color: #33691e;
-} /* 배송중 */
-.status-done {
-	background-color: #eceff1;
-	color: #455a64;
-} /* 배송완료 */
-
-/* [핵심] 모바일 반응형 테이블 설정 */
-@media ( max-width : 991px) {
-	.table-responsive-custom {
-		overflow-x: auto;
-		-webkit-overflow-scrolling: touch;
-	}
-	.table {
-		min-width: 900px; /* 정보가 많으므로 최소 폭 확보 */
-		font-size: 14px;
-	}
-	.btn-sm {
-		padding: 4px 8px;
-		font-size: 12px;
-	}
-}
-
-/* 주소 열 너비 제한 */
-.address-text {
-	max-width: 180px;
-	display: block;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
-}
-</style>
-
-<div class="container">
-	<div class="table-container shadow-sm border">
-		<div class="d-flex justify-content-between align-items-center mb-4">
-			<div>
-				<h2 class="fw-bold mb-1">📦 전체 주문 관리</h2>
-				<p class="text-muted mb-0 small">고객님의 주문 내역 확인 및 배송 상태를 관리합니다.</p>
-			</div>
-			<span class="badge bg-dark rounded-pill">총 <%= list != null ? list.size() : 0 %>건
-			</span>
-		</div>
-
-		<div class="table-responsive-custom">
-			<table class="table table-hover align-middle">
-				<thead class="table-light">
-					<tr class="text-center">
-						<th>주문번호</th>
-						<th>주문자 ID</th>
-						<th>결제금액</th>
-						<th>주문일시</th>
-						<th>배송지</th>
-						<th>상태</th>
-						<th>관리</th>
-					</tr>
-				</thead>
-				<tbody>
-					<% if (list != null && !list.isEmpty()) { 
-                        for (OrderDTO order : list) { 
-                            String currentStatus = order.getStatus();
-                            String badgeClass = "status-paid";
-                            if("배송준비".equals(currentStatus)) badgeClass = "status-ready";
-                            else if("배송중".equals(currentStatus)) badgeClass = "status-shipping";
-                            else if("배송완료".equals(currentStatus)) badgeClass = "status-done";
-                    %>
-					<tr class="text-center">
-						<td><strong>#<%= order.getOrderId() %></strong></td>
-						<td><%= order.getUserid() %></td>
-						<td class="text-primary fw-bold"><%= String.format("%,d", order.getTotalPrice()) %>원</td>
-						<td class="small text-muted"><%= order.getOrderDate() %></td>
-						<td class="text-start"><span class="address-text"
-							title="<%= order.getAddress() %>"> <small><%= order.getAddress() %></small>
-						</span></td>
-						<td><span class="status-badge <%= badgeClass %>"><%= currentStatus %></span></td>
-						<td>
-							<div class="d-flex gap-1 justify-content-center">
-								<div class="btn-group">
-									<button type="button"
-										class="btn btn-sm btn-outline-success dropdown-toggle fw-bold"
-										data-bs-toggle="dropdown">상태변경</button>
-									<ul class="dropdown-menu shadow-sm">
-										<li><a class="dropdown-item"
-											href="updateOrderStatus?orderId=<%= order.getOrderId() %>&status=결제완료">결제완료</a></li>
-										<li><a class="dropdown-item"
-											href="updateOrderStatus?orderId=<%= order.getOrderId() %>&status=배송준비">배송준비</a></li>
-										<li><a class="dropdown-item"
-											href="updateOrderStatus?orderId=<%= order.getOrderId() %>&status=배송중">배송중</a></li>
-										<li><a class="dropdown-item"
-											href="updateOrderStatus?orderId=<%= order.getOrderId() %>&status=배송완료">배송완료</a></li>
-									</ul>
-								</div>
-								<button class="btn btn-sm btn-outline-danger fw-bold"
-									onclick="if(confirm('주문을 취소하시겠습니까?')) location.href='deleteOrder?orderId=<%= order.getOrderId() %>'">취소</button>
-							</div>
-						</td>
-					</tr>
-					<% } } else { %>
-					<tr>
-						<td colspan="7" class="text-center py-5 text-muted">현재 들어온
-							주문이 없습니다.</td>
-					</tr>
-					<% } %>
-				</tbody>
-			</table>
-		</div>
-	</div>
-</div>
+  <div class="bg-[#18181c] border border-[rgba(255,255,255,0.07)] rounded-2xl overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm" style="min-width: 860px;">
+        <thead>
+          <tr class="border-b border-[rgba(255,255,255,0.07)]">
+            <th class="px-5 py-3.5 text-left text-[10px] font-medium tracking-[0.1em] uppercase text-[#8a8790]">주문번호</th>
+            <th class="px-5 py-3.5 text-left text-[10px] font-medium tracking-[0.1em] uppercase text-[#8a8790]">주문자 ID</th>
+            <th class="px-5 py-3.5 text-left text-[10px] font-medium tracking-[0.1em] uppercase text-[#8a8790]">결제금액</th>
+            <th class="px-5 py-3.5 text-left text-[10px] font-medium tracking-[0.1em] uppercase text-[#8a8790]">주문일시</th>
+            <th class="px-5 py-3.5 text-left text-[10px] font-medium tracking-[0.1em] uppercase text-[#8a8790]">배송지</th>
+            <th class="px-5 py-3.5 text-left text-[10px] font-medium tracking-[0.1em] uppercase text-[#8a8790]">상태</th>
+            <th class="px-5 py-3.5 text-left text-[10px] font-medium tracking-[0.1em] uppercase text-[#8a8790]">관리</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (list != null && !list.isEmpty()) {
+               for (OrderDTO order : list) {
+                 String cs = order.getStatus();
+                 String badgeCls;
+                 if ("배송완료".equals(cs)) badgeCls = "bg-[rgba(133,192,64,0.12)] text-[#85c040] border-[rgba(133,192,64,0.25)]";
+                 else if ("배송중".equals(cs)) badgeCls = "bg-[rgba(200,169,110,0.12)] text-[#c8a96e] border-[rgba(200,169,110,0.25)]";
+                 else badgeCls = "bg-[rgba(255,255,255,0.05)] text-[#8a8790] border-[rgba(255,255,255,0.07)]";
+          %>
+          <tr class="border-b border-[rgba(255,255,255,0.05)] hover:bg-[rgba(255,255,255,0.02)] transition-colors">
+            <td class="px-5 py-4 font-mono text-xs text-[#8a8790]">#<%= order.getOrderId() %></td>
+            <td class="px-5 py-4 text-sm font-medium text-[#f0ede8]"><%= order.getUserid() %></td>
+            <td class="px-5 py-4 text-sm font-semibold text-[#c8a96e]"><%= String.format("%,d", order.getTotalPrice()) %>원</td>
+            <td class="px-5 py-4 text-xs text-[#8a8790]"><%= order.getOrderDate() %></td>
+            <td class="px-5 py-4 text-xs text-[#8a8790] max-w-[160px] truncate" title="<%= order.getAddress() %>"><%= order.getAddress() %></td>
+            <td class="px-5 py-4">
+              <span class="px-2.5 py-1 rounded text-[10px] font-bold tracking-wider uppercase border <%= badgeCls %>"><%= cs %></span>
+            </td>
+            <td class="px-5 py-4">
+              <div class="flex items-center gap-2">
+                <form action="updateOrderStatus" method="get" class="flex items-center gap-1">
+                  <input type="hidden" name="orderId" value="<%= order.getOrderId() %>">
+                  <select name="status" style="width:auto; padding:6px 10px; font-size:12px;">
+                    <option value="결제완료" <%= "결제완료".equals(cs) ? "selected" : "" %>>결제완료</option>
+                    <option value="배송중" <%= "배송중".equals(cs) ? "selected" : "" %>>배송중</option>
+                    <option value="배송완료" <%= "배송완료".equals(cs) ? "selected" : "" %>>배송완료</option>
+                  </select>
+                  <button type="submit"
+                          class="px-2.5 py-1.5 rounded-lg text-xs bg-[rgba(133,192,64,0.1)] text-[#85c040] border border-[rgba(133,192,64,0.25)] hover:bg-[rgba(133,192,64,0.2)] transition-all"
+                          style="width:auto; border:1px solid rgba(133,192,64,0.25); cursor:pointer;">변경</button>
+                </form>
+                <button onclick="if(confirm('주문을 취소하시겠습니까?')) location.href='deleteOrder?orderId=<%= order.getOrderId() %>'"
+                        class="px-2.5 py-1.5 rounded-lg text-xs text-[#e24b4a] border border-[rgba(226,75,74,0.25)] hover:bg-[rgba(226,75,74,0.08)] transition-all"
+                        style="background:none; cursor:pointer;">취소</button>
+              </div>
+            </td>
+          </tr>
+          <% } } else { %>
+          <tr>
+            <td colspan="7" class="text-center py-16 text-[#4a4850]">현재 들어온 주문이 없습니다.</td>
+          </tr>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</main>
 
 <%@ include file="footer.jsp"%>

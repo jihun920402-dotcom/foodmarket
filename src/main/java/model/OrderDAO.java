@@ -10,19 +10,6 @@ public class OrderDAO {
 	private PreparedStatement pstmt;
 	private ResultSet rs;
 
-	// [수정] Render PostgreSQL 연결 설정
-	private void getConnection() {
-		try {
-			Class.forName("org.postgresql.Driver");
-			String url = "jdbc:postgresql://dpg-d70fdteuk2gs7399g6m0-a.singapore-postgres.render.com:5432/shop_vm5g";
-			String user = "admin";
-			String pass = "RrwxAEPyRAWP9FLgGYqSMl8lM6vEQ0Wh";
-			conn = DriverManager.getConnection(url, user, pass);
-		} catch (Exception e) {
-			System.out.println("DB 연결 실패 (PostgreSQL): " + e.getMessage());
-		}
-	}
-
 	private void close() {
 		try {
 			if (rs != null)
@@ -36,16 +23,12 @@ public class OrderDAO {
 		}
 	}
 
-	/**
-	 * [1. 단품 결제 트랜잭션]
-	 */
 	public boolean processOrderTransaction(OrderDTO order, int p_id, int count) {
-		getConnection();
+		conn = DBConnection.getConnection();
 		boolean success = false;
 		try {
 			conn.setAutoCommit(false);
 
-			// PostgreSQL: SERIAL 사용 시 order_id 제외, CURRENT_TIMESTAMP 사용
 			String sqlOrder = "INSERT INTO market_orders (userid, total_price, receiver_name, receiver_phone, address, status, order_date) "
 					+ "VALUES (?, ?, ?, ?, ?, '결제완료', CURRENT_TIMESTAMP)";
 			pstmt = conn.prepareStatement(sqlOrder);
@@ -91,19 +74,14 @@ public class OrderDAO {
 		return success;
 	}
 
-	/**
-	 * [2. 장바구니 다중 결제 트랜잭션]
-	 */
 	public boolean insertOrderFromCart(OrderDTO order, List<CartDTO> items) {
-		getConnection();
+		conn = DBConnection.getConnection();
 		boolean success = false;
 		try {
 			conn.setAutoCommit(false);
 
-			// 1. 주문 메인 저장
 			String sqlOrder = "INSERT INTO market_orders (userid, total_price, receiver_name, receiver_phone, address, status, order_date) "
 					+ "VALUES (?, ?, ?, ?, ?, '결제완료', CURRENT_TIMESTAMP)";
-			// PostgreSQL에서 생성된 키를 가져오는 방식
 			pstmt = conn.prepareStatement(sqlOrder, Statement.RETURN_GENERATED_KEYS);
 			pstmt.setString(1, order.getUserid());
 			pstmt.setInt(2, order.getTotalPrice());
@@ -118,7 +96,6 @@ public class OrderDAO {
 				newOrderId = rs.getInt(1);
 			}
 
-			// 2. 주문 상세 저장
 			for (CartDTO item : items) {
 				String sqlItem = "INSERT INTO market_order_items (order_id, p_id, count, order_price) VALUES (?, ?, ?, ?)";
 				PreparedStatement psItem = conn.prepareStatement(sqlItem);
@@ -166,7 +143,7 @@ public class OrderDAO {
 
 	public OrderDTO getOrderById(int orderId) {
 		OrderDTO dto = null;
-		getConnection();
+		conn = DBConnection.getConnection();
 		String sql = "SELECT * FROM market_orders WHERE order_id = ?";
 		try {
 			pstmt = conn.prepareStatement(sql);
@@ -193,9 +170,11 @@ public class OrderDAO {
 
 	public List<CartDTO> getOrderDetailItems(int orderId) {
 		List<CartDTO> list = new ArrayList<>();
-		getConnection();
-		String sql = "SELECT i.p_id, p.p_name, p.p_img_url, i.count, i.order_price " + "FROM market_order_items i "
-				+ "JOIN market_products p ON i.p_id = p.p_id " + "WHERE i.order_id = ?";
+		conn = DBConnection.getConnection();
+		String sql = "SELECT i.p_id, p.p_name, p.p_img_url, i.count, i.order_price "
+				+ "FROM market_order_items i "
+				+ "JOIN market_products p ON i.p_id = p.p_id "
+				+ "WHERE i.order_id = ?";
 		try {
 			pstmt = conn.prepareStatement(sql);
 			pstmt.setInt(1, orderId);
@@ -219,7 +198,7 @@ public class OrderDAO {
 
 	public List<OrderDTO> getOrderList(String userid) {
 		List<OrderDTO> list = new ArrayList<>();
-		getConnection();
+		conn = DBConnection.getConnection();
 		String sql = "SELECT * FROM market_orders WHERE userid = ? ORDER BY order_date DESC";
 		try {
 			pstmt = conn.prepareStatement(sql);
@@ -246,7 +225,7 @@ public class OrderDAO {
 	}
 
 	public int updateOrderStatus(int orderId, String status) {
-		getConnection();
+		conn = DBConnection.getConnection();
 		int result = 0;
 		String sql = "UPDATE market_orders SET status = ? WHERE order_id = ?";
 		try {
@@ -263,7 +242,7 @@ public class OrderDAO {
 	}
 
 	public int deleteOrder(int orderId) {
-		getConnection();
+		conn = DBConnection.getConnection();
 		int result = 0;
 		try {
 			conn.setAutoCommit(false);
@@ -333,7 +312,7 @@ public class OrderDAO {
 
 	public List<OrderDTO> getAllOrders() {
 		List<OrderDTO> list = new ArrayList<>();
-		getConnection();
+		conn = DBConnection.getConnection();
 		String sql = "SELECT * FROM market_orders ORDER BY order_date DESC";
 		try {
 			pstmt = conn.prepareStatement(sql);
@@ -361,7 +340,7 @@ public class OrderDAO {
 	public int processOrder(MemberDTO user, List<CartDTO> checkoutList, int totalPrice) {
 		int generatedOrderId = 0;
 		try {
-			getConnection();
+			conn = DBConnection.getConnection();
 			conn.setAutoCommit(false);
 
 			String sqlOrder = "INSERT INTO market_orders (userid, total_price, order_date, receiver_name, receiver_phone, address, status) "

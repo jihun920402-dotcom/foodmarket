@@ -11,6 +11,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import model.MemberDAO;
 import model.MemberDTO;
+import common.PasswordUtil;
 
 @WebServlet("/join")
 public class JoinServlet extends HttpServlet {
@@ -24,7 +25,7 @@ public class JoinServlet extends HttpServlet {
 
 		// 1. 파라미터 수집
 		String userid = request.getParameter("userid");
-		String password = request.getParameter("password");
+		String password = PasswordUtil.hash(request.getParameter("password"));
 		String name = request.getParameter("name");
 		int age = Integer.parseInt(request.getParameter("age"));
 		String phone = request.getParameter("phone");

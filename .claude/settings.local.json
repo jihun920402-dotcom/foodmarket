@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(docker --version 2>$null; if \\($?\\) { \"Docker available\" } else { \"Docker not available\" })",
+      "PowerShell(java *)",
+      "PowerShell(docker stop homepage-dev-container 2>$null; docker rm homepage-dev-container 2>$null; docker run -d --name homepage-dev-container -p 8080:8080 homepage-dev)",
+      "PowerShell(Start-Process \"http://localhost:8080\")",
+      "PowerShell(Start-Process \"http://localhost:8080/list\")",
+      "PowerShell(mysql *)",
+      "PowerShell(docker stop homepage-dev-container 2>$null; docker rm homepage-dev-container 2>$null; Write-Host \"기존 컨테이너 정리 완료\")",
+      "PowerShell(docker exec homepage-mysql-1 *)",
+      "PowerShell(docker cp \"C:\\\\Users\\\\jihun\\\\Desktop\\\\project\\\\homepage\\\\sample_data.sql\" homepage-mysql-1:/tmp/sample_data.sql; docker exec homepage-mysql-1 mysql --default-character-set=utf8mb4 -u shopuser -pshoppass shopdb -e \"source /tmp/sample_data.sql\" 2>&1)",
+      "Bash(docker compose up *)",
+      "Bash(docker exec homepage-mysql-1 *)",
+      "Bash(curl -s \"http://localhost:8080/list\")",
+      "Bash(curl -sv \"http://localhost:8080/list\")",
+      "Bash(curl -s \"http://localhost:8080/list?keyword=%EC%83%81%ED%92%88\")",
+      "Bash(curl -s \"http://localhost:8080/list\" -D - -o /dev/null)",
+      "Bash(curl -s -X POST http://localhost:8080/join -d 'userid=testuser123&password=Test1234&name=%ED%99%8D%EA%B8%B8%EB%8F%99&phone=010-1234-5678&accountNumber=123-456-789' -H 'Content-Type: application/x-www-form-urlencoded' -D - -o /dev/null)",
+      "Bash(curl -s -X POST http://localhost:8080/join -d 'userid=testuser123&password=Test1234&name=%ED%99%8D%EA%B8%B8%EB%8F%99&phone=010-1234-5678&accountNumber=123-456-789' -H 'Content-Type: application/x-www-form-urlencoded')",
+      "Bash(docker cp *)",
+      "Bash(curl -s -c /tmp/cookies.txt -X POST http://localhost:8080/login -d 'userid=admin&password=1234' -H 'Content-Type: application/x-www-form-urlencoded' -D - -o /dev/null)"
+    ]
+  }
+}

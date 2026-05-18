@@ -2,150 +2,132 @@
 	pageEncoding="UTF-8"%>
 <%@ page import="model.*, java.util.List"%>
 <%
-// [수정] 팝업 대신 리다이렉트 로직으로 변경
 String orderIdStr = request.getParameter("orderId");
 int orderId = 0;
 
-// orderId가 없거나 숫자가 아니면 묻지도 따지지도 않고 목록으로 보냅니다.
 if (orderIdStr == null || orderIdStr.trim().isEmpty()) {
-	response.sendRedirect("orderList");
-	return;
+    response.sendRedirect("orderList");
+    return;
 } else {
-	try {
-		orderId = Integer.parseInt(orderIdStr);
-	} catch (NumberFormatException e) {
-		response.sendRedirect("orderList");
-		return;
-	}
+    try {
+        orderId = Integer.parseInt(orderIdStr);
+    } catch (NumberFormatException e) {
+        response.sendRedirect("orderList");
+        return;
+    }
 }
 
 OrderDAO dao = new OrderDAO();
-
-// 주문 마스터 정보와 상세 품목 리스트 조회
 OrderDTO order = dao.getOrderById(orderId);
 List<CartDTO> itemList = dao.getOrderDetailItems(orderId);
 
-// DB에 데이터가 없는 경우에도 목록으로 이동
 if (order == null) {
-	response.sendRedirect("orderList");
-	return;
+    response.sendRedirect("orderList");
+    return;
 }
 %>
-<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<title>주문 상세 내역</title>
-<link
-	href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-	rel="stylesheet">
-<style>
-.detail-container {
-	background: white;
-	border-radius: 15px;
-	padding: 30px;
-	margin-top: 50px;
-	border: 1px solid #eee;
-}
+<%@ include file="header.jsp"%>
 
-.product-img {
-	width: 80px;
-	height: 80px;
-	object-fit: cover;
-	border-radius: 8px;
-}
+<main class="max-w-7xl mx-auto px-4 sm:px-6 py-10">
+  <div class="max-w-2xl mx-auto">
 
-.info-label {
-	font-weight: bold;
-	color: #666;
-	width: 120px;
-	display: inline-block;
-}
-</style>
-</head>
-<body class="bg-light">
+    <div class="mb-8 flex items-center justify-between">
+      <div>
+        <h1 class="text-2xl font-bold text-[#f0ede8] tracking-tight">주문 상세</h1>
+        <p class="text-sm text-[#8a8790] mt-1">주문번호 #<%= order.getOrderId() %></p>
+      </div>
+      <%
+        String st = order.getStatus();
+        String badgeCls;
+        if ("배송완료".equals(st)) badgeCls = "bg-[rgba(133,192,64,0.12)] text-[#85c040] border-[rgba(133,192,64,0.25)]";
+        else if ("배송중".equals(st)) badgeCls = "bg-[rgba(200,169,110,0.12)] text-[#c8a96e] border-[rgba(200,169,110,0.25)]";
+        else badgeCls = "bg-[rgba(255,255,255,0.05)] text-[#8a8790] border-[rgba(255,255,255,0.07)]";
+      %>
+      <span class="px-3 py-1.5 rounded text-[10px] font-bold tracking-wider uppercase border <%= badgeCls %>">
+        <%= st %>
+      </span>
+    </div>
 
-	<jsp:include page="header.jsp" />
+    <!-- 주문 요약 -->
+    <div class="bg-[#18181c] border border-[rgba(255,255,255,0.07)] rounded-2xl p-5 mb-6">
+      <div class="flex justify-between py-2 border-b border-[rgba(255,255,255,0.05)]">
+        <span class="text-xs text-[#8a8790]">주문번호</span>
+        <span class="text-sm font-mono text-[#f0ede8]">#<%= order.getOrderId() %></span>
+      </div>
+      <div class="flex justify-between py-2">
+        <span class="text-xs text-[#8a8790]">주문일시</span>
+        <span class="text-sm text-[#f0ede8]"><%= order.getOrderDate() %></span>
+      </div>
+    </div>
 
-	<div class="container">
-		<div class="row justify-content-center">
-			<div class="col-lg-8 detail-container shadow-sm">
-				<div class="d-flex justify-content-between align-items-center mb-4">
-					<h3 class="fw-bold mb-0">📄 주문 상세 정보</h3>
-					<span class="badge bg-primary fs-6"><%=order.getStatus()%></span>
-				</div>
+    <!-- 구매 상품 -->
+    <div class="bg-[#18181c] border border-[rgba(255,255,255,0.07)] rounded-2xl overflow-hidden mb-6">
+      <div class="px-5 py-4 border-b border-[rgba(255,255,255,0.07)]">
+        <h2 class="text-sm font-bold text-[#f0ede8]">구매 상품</h2>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm" style="min-width: 400px;">
+          <thead>
+            <tr class="border-b border-[rgba(255,255,255,0.07)]">
+              <th colspan="2" class="px-5 py-3 text-left text-[10px] font-medium tracking-[0.1em] uppercase text-[#8a8790]">상품 정보</th>
+              <th class="px-5 py-3 text-center text-[10px] font-medium tracking-[0.1em] uppercase text-[#8a8790]">수량</th>
+              <th class="px-5 py-3 text-right text-[10px] font-medium tracking-[0.1em] uppercase text-[#8a8790]">금액</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% if (itemList != null) {
+                 for (CartDTO item : itemList) { %>
+            <tr class="border-b border-[rgba(255,255,255,0.05)]">
+              <td class="px-5 py-4 w-20">
+                <img src="<%= item.getImgUrl() %>" alt=""
+                     style="width:64px; height:64px; object-fit:cover; border-radius:8px; border:1px solid rgba(255,255,255,0.07);">
+              </td>
+              <td class="px-3 py-4">
+                <p class="text-sm font-medium text-[#f0ede8]"><%= item.getProductName() %></p>
+                <p class="text-xs text-[#8a8790] mt-0.5">단가: <%= String.format("%,d", item.getProductPrice()) %>원</p>
+              </td>
+              <td class="px-5 py-4 text-center text-sm text-[#8a8790]"><%= item.getCount() %>개</td>
+              <td class="px-5 py-4 text-right text-sm font-semibold text-[#f0ede8]"><%= String.format("%,d", item.getProductPrice() * item.getCount()) %>원</td>
+            </tr>
+            <% } } %>
+          </tbody>
+          <tfoot>
+            <tr class="border-t border-[rgba(255,255,255,0.1)]">
+              <td colspan="3" class="px-5 py-4 text-right text-sm text-[#8a8790]">총 결제 금액</td>
+              <td class="px-5 py-4 text-right text-lg font-bold text-[#c8a96e]"><%= String.format("%,d", order.getTotalPrice()) %>원</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
 
-				<div class="alert alert-secondary p-3">
-					<div class="mb-1">
-						<span class="info-label">주문번호</span> #<%=order.getOrderId()%></div>
-					<div>
-						<span class="info-label">주문일시</span>
-						<%=order.getOrderDate()%></div>
-				</div>
+    <!-- 배송 정보 -->
+    <div class="bg-[#18181c] border border-[rgba(255,255,255,0.07)] rounded-2xl p-5 mb-8">
+      <h2 class="text-sm font-bold text-[#f0ede8] mb-4">배송 정보</h2>
+      <div class="space-y-3">
+        <div class="flex justify-between py-2 border-b border-[rgba(255,255,255,0.05)]">
+          <span class="text-xs text-[#8a8790]">수령인</span>
+          <span class="text-sm text-[#f0ede8]"><%= order.getReceiverName() %></span>
+        </div>
+        <div class="flex justify-between py-2 border-b border-[rgba(255,255,255,0.05)]">
+          <span class="text-xs text-[#8a8790]">연락처</span>
+          <span class="text-sm text-[#f0ede8]"><%= order.getReceiverPhone() != null ? order.getReceiverPhone() : "정보없음" %></span>
+        </div>
+        <div class="flex justify-between py-2">
+          <span class="text-xs text-[#8a8790]">배송지 주소</span>
+          <span class="text-sm text-[#f0ede8] text-right max-w-xs"><%= order.getAddress() %></span>
+        </div>
+      </div>
+    </div>
 
-				<h5 class="fw-bold mt-4 mb-3">🛒 구매 상품</h5>
-				<table class="table align-middle">
-					<thead class="table-light">
-						<tr>
-							<th colspan="2">상품 정보</th>
-							<th>수량</th>
-							<th class="text-end">금액</th>
-						</tr>
-					</thead>
-					<tbody>
-						<%
-						if (itemList != null) {
-							for (CartDTO item : itemList) {
-						%>
-						<tr>
-							<td style="width: 100px;"><img src="<%=item.getImgUrl()%>"
-								class="product-img" alt="상품이미지"></td>
-							<td>
-								<div class="fw-bold"><%=item.getProductName()%></div>
-								<div class="small text-muted">
-									단가:
-									<%=String.format("%,d", item.getProductPrice())%>원
-								</div>
-							</td>
-							<td><%=item.getCount()%>개</td>
-							<td class="text-end fw-bold"><%=String.format("%,d", item.getProductPrice() * item.getCount())%>원
-							</td>
-						</tr>
-						<%
-						}
-						}
-						%>
-					</tbody>
-					<tfoot>
-						<tr class="table-light">
-							<td colspan="3" class="text-end fw-bold">총 결제 금액</td>
-							<td class="text-end text-danger fw-bold fs-5"><%=String.format("%,d", order.getTotalPrice())%>원
-							</td>
-						</tr>
-					</tfoot>
-				</table>
+    <div class="flex justify-center">
+      <a href="orderList"
+         class="px-8 py-3 rounded-xl border border-[rgba(255,255,255,0.07)] text-sm text-[#8a8790] hover:text-[#f0ede8] hover:border-[rgba(255,255,255,0.15)] transition-all">
+        목록으로
+      </a>
+    </div>
 
-				<h5 class="fw-bold mt-5 mb-3">📍 배송 정보</h5>
-				<div class="border-top pt-3">
-					<div class="mb-2">
-						<span class="info-label">수령인</span>
-						<%=order.getReceiverName()%></div>
-					<div class="mb-2">
-						<span class="info-label">연락처</span>
-						<%=order.getReceiverPhone() != null ? order.getReceiverPhone() : "정보없음"%></div>
-					<div class="mb-2">
-						<span class="info-label">배송지 주소</span>
-						<%=order.getAddress()%></div>
-				</div>
+  </div>
+</main>
 
-				<div class="text-center mt-5">
-					<a href="orderList" class="btn btn-secondary px-4">목록으로</a>
-				</div>
-			</div>
-		</div>
-	</div>
-
-	<script
-		src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+<%@ include file="footer.jsp"%>
