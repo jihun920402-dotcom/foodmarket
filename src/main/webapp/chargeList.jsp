@@ -20,7 +20,7 @@ List<ChargeDTO> list = dao.getChargeList(currentUser.getUserid());
   <div class="max-w-2xl mx-auto">
 
     <!-- 마일리지 배너 -->
-    <div class="bg-gradient-to-br from-[#18161a] to-[#201d25] border border-[rgba(200,169,110,0.2)] rounded-2xl p-8 text-center mb-8">
+    <div class="bg-gradient-to-br from-[#18161a] to-[#201d25] border border-[rgba(200,169,110,0.2)] rounded-2xl p-4 sm:p-8 text-center mb-8">
       <p class="text-[11px] font-medium tracking-[0.2em] uppercase text-[#c8a96e] mb-2">Mileage Center</p>
       <h2 class="text-2xl font-bold text-[#f0ede8]">마일리지 충전 내역</h2>
       <p class="text-sm text-[#8a8790] mt-1">안전하고 빠른 마일리지 충전 시스템</p>

@@ -19,7 +19,14 @@
       "Bash(curl -s -X POST http://localhost:8080/join -d 'userid=testuser123&password=Test1234&name=%ED%99%8D%EA%B8%B8%EB%8F%99&phone=010-1234-5678&accountNumber=123-456-789' -H 'Content-Type: application/x-www-form-urlencoded' -D - -o /dev/null)",
       "Bash(curl -s -X POST http://localhost:8080/join -d 'userid=testuser123&password=Test1234&name=%ED%99%8D%EA%B8%B8%EB%8F%99&phone=010-1234-5678&accountNumber=123-456-789' -H 'Content-Type: application/x-www-form-urlencoded')",
       "Bash(docker cp *)",
-      "Bash(curl -s -c /tmp/cookies.txt -X POST http://localhost:8080/login -d 'userid=admin&password=1234' -H 'Content-Type: application/x-www-form-urlencoded' -D - -o /dev/null)"
+      "Bash(curl -s -c /tmp/cookies.txt -X POST http://localhost:8080/login -d 'userid=admin&password=1234' -H 'Content-Type: application/x-www-form-urlencoded' -D - -o /dev/null)",
+      "Bash(docker compose ps *)",
+      "Bash(docker exec foodmarket-mysql-1 *)",
+      "PowerShell(docker cp *)",
+      "PowerShell(docker exec foodmarket-mysql-1 *)",
+      "PowerShell(Get-ChildItem \"C:\\\\Users\\\\Administrator\\\\Desktop\\\\정지훈\\\\react\\\\foodmarket\" -Recurse | Where-Object { $_.Extension -in \".jsp\",\".css\",\".html\" } | Select-Object FullName)",
+      "PowerShell(Head *)",
+      "PowerShell(docker exec foodmarket-app-1 *)"
     ]
   }
 }

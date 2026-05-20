@@ -20,7 +20,7 @@ if (sort     == null) sort     = "latest";
 <main class="max-w-7xl mx-auto px-4 sm:px-6 py-10">
 
   <!-- 히어로 배너 -->
-  <div class="bg-gradient-to-r from-[#18161a] to-[#201d25] border border-[rgba(200,169,110,0.2)] rounded-2xl p-8 text-center mb-8">
+  <div class="bg-gradient-to-r from-[#18161a] to-[#201d25] border border-[rgba(200,169,110,0.2)] rounded-2xl p-4 sm:p-8 text-center mb-8">
     <p class="text-[11px] font-medium tracking-[0.2em] uppercase text-[#c8a96e] mb-2">Fresh Food</p>
     <h1 class="text-2xl font-bold text-[#f0ede8]">푸드마켓</h1>
     <p class="text-sm text-[#8a8790] mt-1">신선한 식품을 합리적인 가격으로</p>
@@ -93,7 +93,7 @@ if (sort     == null) sort     = "latest";
   <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
     <% for (ProductDTO p : displayList) {
        String imgPath = (p.getImgUrl() != null && !p.getImgUrl().isEmpty())
-           ? p.getImgUrl() : "https://via.placeholder.com/300?text=No+Image";
+           ? p.getImgUrl() : request.getContextPath() + "/images/no-image.png";
     %>
     <div class="bg-[#18181c] border border-[rgba(255,255,255,0.07)] rounded-2xl overflow-hidden
                 hover:border-[rgba(200,169,110,0.35)] hover:bg-[#1e1e24]
@@ -103,7 +103,7 @@ if (sort     == null) sort     = "latest";
         <div class="aspect-square bg-[#141418] overflow-hidden relative">
           <img src="<%= imgPath %>" alt="<%= p.getName() %>"
                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-               onerror="this.src='https://via.placeholder.com/300?text=No+Image'">
+               onerror="this.src='<%= request.getContextPath() %>/images/no-image.png'; this.onerror=null;">
           <% if (p.getStock() <= 0) { %>
           <div class="absolute inset-0 bg-black/60 flex items-center justify-center">
             <span class="px-3 py-1 rounded text-[10px] font-bold tracking-widest bg-[rgba(226,75,74,0.15)] text-[#e24b4a] border border-[rgba(226,75,74,0.3)] uppercase">품절</span>

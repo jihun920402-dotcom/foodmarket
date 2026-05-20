@@ -10,7 +10,7 @@ MemberDTO currentUser = (MemberDTO) session.getAttribute("loginUser");
 
 if (p != null) {
     String imgPath = (p.getImgUrl() != null && !p.getImgUrl().trim().isEmpty()) ? p.getImgUrl()
-        : "https://via.placeholder.com/500?text=No+Image";
+        : request.getContextPath() + "/images/no-image.png";
 %>
 
 <main class="max-w-7xl mx-auto px-4 sm:px-6 py-10">
@@ -25,12 +25,12 @@ if (p != null) {
           <img src="<%= imgPath %>"
                alt="<%= p.getName() %>"
                class="w-full h-full object-cover"
-               onerror="this.src='https://via.placeholder.com/500?text=No+Image'">
+               onerror="this.src='<%= request.getContextPath() %>/images/no-image.png'; this.onerror=null;">
         </div>
       </div>
 
       <!-- 정보 -->
-      <div class="md:w-3/5 p-8 flex flex-col justify-between">
+      <div class="md:w-3/5 p-5 sm:p-8 flex flex-col justify-between">
         <div>
           <p class="text-[10px] font-medium tracking-[0.15em] uppercase text-[#a8894e] mb-3"><%= p.getCategory() %></p>
           <h1 class="text-2xl md:text-3xl font-bold text-[#f0ede8] mb-4 leading-snug"><%= p.getName() %></h1>
@@ -54,9 +54,9 @@ if (p != null) {
         </div>
 
         <!-- 버튼 -->
-        <div class="flex gap-3">
+        <div class="flex gap-3 mt-4">
           <a href="list"
-             class="flex-none px-6 py-3.5 rounded-xl border border-[rgba(255,255,255,0.07)] text-sm text-[#8a8790] hover:text-[#f0ede8] hover:border-[rgba(255,255,255,0.15)] transition-all text-center"
+             class="shrink-0 px-5 py-3.5 rounded-xl border border-[rgba(255,255,255,0.07)] text-sm text-[#8a8790] hover:text-[#f0ede8] hover:border-[rgba(255,255,255,0.15)] transition-all text-center"
              style="text-decoration:none;">
             목록
           </a>

@@ -1,0 +1,13 @@
+USE shopdb;
+UPDATE market_products SET p_img_url = '/images/products/product_1.jfif'  WHERE p_id = 1;
+UPDATE market_products SET p_img_url = '/images/products/product_2.jfif'  WHERE p_id = 2;
+UPDATE market_products SET p_img_url = '/images/products/product_3.jfif'  WHERE p_id = 3;
+UPDATE market_products SET p_img_url = '/images/products/product_4.jfif'  WHERE p_id = 4;
+UPDATE market_products SET p_img_url = '/images/products/product_5.jfif'  WHERE p_id = 5;
+UPDATE market_products SET p_img_url = '/images/products/product_6.jfif'  WHERE p_id = 6;
+UPDATE market_products SET p_img_url = '/images/products/product_7.jfif'  WHERE p_id = 7;
+UPDATE market_products SET p_img_url = '/images/products/product_8.jfif'  WHERE p_id = 8;
+UPDATE market_products SET p_img_url = '/images/products/product_9.jfif'  WHERE p_id = 9;
+UPDATE market_products SET p_img_url = '/images/products/product_10.jfif' WHERE p_id = 10;
+UPDATE market_products SET p_img_url = '/images/products/product_11.jfif' WHERE p_id = 11;
+UPDATE market_products SET p_img_url = '/images/products/product_12.jfif' WHERE p_id = 12;

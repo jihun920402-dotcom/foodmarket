@@ -18,7 +18,60 @@ int totalMileage = (loginUser != null) ? loginUser.getMileage() : 0;
 
     <!-- 상품 목록 -->
     <div class="flex-1 bg-[#18181c] border border-[rgba(255,255,255,0.07)] rounded-2xl overflow-hidden">
-      <div class="overflow-x-auto">
+
+      <!-- 모바일 카드 뷰 -->
+      <div class="block sm:hidden">
+        <% if (cartList == null || cartList.isEmpty()) { %>
+        <div class="text-center py-20 text-[#4a4850]">장바구니가 비어 있습니다.</div>
+        <% } else { %>
+        <div class="flex items-center gap-2 px-4 py-3 border-b border-[rgba(255,255,255,0.07)]">
+          <input type="checkbox" id="selectAllMobile" checked onclick="toggleAll(this)" style="width:16px!important;">
+          <span class="text-xs text-[#8a8790]">전체 선택</span>
+        </div>
+        <div class="divide-y divide-[rgba(255,255,255,0.05)]">
+          <% for (CartDTO item : cartList) { %>
+          <div class="p-4 cart-item-row">
+            <div class="flex items-start gap-3">
+              <input type="checkbox" name="selectedItems" class="item-check mt-1"
+                     value="<%= item.getCartId() %>"
+                     data-price="<%= item.getProductPrice() %>"
+                     data-count="<%= item.getCount() %>"
+                     checked onclick="updateTotal()" style="width:16px!important; flex-shrink:0;">
+              <img src="<%= item.getImgUrl() %>" alt=""
+                   style="width:60px; height:60px; object-fit:cover; border-radius:8px; border:1px solid rgba(255,255,255,0.07); flex-shrink:0;">
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium text-[#f0ede8] leading-snug"><%= item.getProductName() %></p>
+                <p class="text-sm text-[#c8a96e] font-semibold mt-1"><%= String.format("%,d", item.getProductPrice()) %>원</p>
+              </div>
+            </div>
+            <div class="flex items-center justify-between mt-3 pt-3 border-t border-[rgba(255,255,255,0.07)]">
+              <form action="updateCart" method="post" class="inline-flex items-center gap-2">
+                <input type="hidden" name="cartId" value="<%= item.getCartId() %>">
+                <button type="submit" name="count" value="<%= item.getCount() - 1 %>"
+                        <%= item.getCount() <= 1 ? "disabled" : "" %>
+                        class="w-8 h-8 rounded-lg border border-[rgba(255,255,255,0.07)] text-[#8a8790] disabled:opacity-30"
+                        style="background:none; cursor:pointer; font-size:18px; padding:0;">−</button>
+                <input type="text" value="<%= item.getCount() %>" readonly
+                       style="width:36px; text-align:center; border:1px solid rgba(255,255,255,0.07); padding:4px; font-size:13px;">
+                <button type="submit" name="count" value="<%= item.getCount() + 1 %>"
+                        class="w-8 h-8 rounded-lg border border-[rgba(255,255,255,0.07)] text-[#8a8790]"
+                        style="background:none; cursor:pointer; font-size:18px; padding:0;">+</button>
+              </form>
+              <div class="flex items-center gap-3">
+                <span class="text-sm font-semibold text-[#c8a96e]"><%= String.format("%,d", item.getProductPrice() * item.getCount()) %>원</span>
+                <button onclick="if(confirm('삭제하시겠습니까?')) location.href='deleteCart?id=<%= item.getCartId() %>'"
+                        class="text-xs text-[#e24b4a] px-3 py-1.5 rounded-lg border border-[rgba(226,75,74,0.25)] hover:bg-[rgba(226,75,74,0.08)] transition-all"
+                        style="background:none; cursor:pointer;">삭제</button>
+              </div>
+            </div>
+          </div>
+          <% } %>
+        </div>
+        <% } %>
+      </div>
+
+      <!-- 데스크탑 테이블 뷰 -->
+      <div class="hidden sm:block overflow-x-auto">
         <table class="w-full text-sm" style="min-width: 580px;">
           <thead>
             <tr class="border-b border-[rgba(255,255,255,0.07)]">
@@ -153,6 +206,10 @@ function submitCheckout() {
 
 function toggleAll(selectAllBox) {
   document.querySelectorAll('.item-check').forEach(cb => cb.checked = selectAllBox.checked);
+  const sa = document.getElementById('selectAll');
+  const sam = document.getElementById('selectAllMobile');
+  if (sa) sa.checked = selectAllBox.checked;
+  if (sam) sam.checked = selectAllBox.checked;
   updateTotal();
 }
 

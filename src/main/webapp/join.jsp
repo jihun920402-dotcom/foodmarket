@@ -9,7 +9,7 @@
       <p class="text-sm text-[#8a8790] mt-1">상세 정보를 입력하여 가입을 완료하세요</p>
     </div>
 
-    <div class="bg-[#18181c] border border-[rgba(255,255,255,0.07)] rounded-2xl p-8">
+    <div class="bg-[#18181c] border border-[rgba(255,255,255,0.07)] rounded-2xl p-5 sm:p-8">
       <form action="join" method="post" onsubmit="return validateForm()">
 
         <!-- 계정 정보 -->
