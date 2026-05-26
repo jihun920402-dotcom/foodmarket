@@ -33,6 +33,7 @@ Maven/Gradle 없음. `Dockerfile.dev` 멀티스테이지 빌드 (베이스: `tom
 - 호스트 직접 접속: `localhost:3307`
 - 초기화 스크립트: `init.sql` (테이블 생성 + admin 계정)
 - 샘플 데이터: `sample_data.sql` (상품만), `sample_full.sql` (상품 12개 + 회원 3명 + 주문 + 리뷰 전체)
+- 이미지 URL 업데이트: `update_product_images.sql` (Unsplash 외부 URL), `update_local_images.sql` (로컬 이미지 경로)
 - 데이터 영속성: `mysql-data` Docker 볼륨
 
 ### 기본 계정 (비밀번호 `1234` → SHA-256)
@@ -127,7 +128,9 @@ controller/*Servlet.java  →  model/*DAO.java  →  common/DBConnection.java
 | `/UpdateServlet` | UpdateServlet | 관리자 상품 수정 처리 |
 | `/delete` | DeleteServlet | 관리자 상품 삭제 |
 
-JSP 직접 접근 페이지: `login.jsp`, `join.jsp`, `mypage.jsp`, `adminMemberList.jsp`, `adminConfig.jsp`, `adminCharge.jsp`
+JSP 직접 접근 페이지: `login.jsp`, `join.jsp`, `mypage.jsp`, `updateMember.jsp`, `chargeRequest.jsp`, `orderDetail.jsp`, `orderSuccess.jsp`, `insertProduct.jsp`, `adminMemberList.jsp`, `adminConfig.jsp`, `adminCharge.jsp`, `adminOrderList.jsp`
+
+> `editProduct.jsp`는 `/edit` 서블릿이 `request.setAttribute("product")` 후 forward하는 JSP — 직접 접근 불가.
 
 ### 인증 / 권한
 
